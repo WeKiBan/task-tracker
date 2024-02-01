@@ -16,7 +16,7 @@ export default function EmailOutput() {
       let formattedString = `${task.taskTicketText} ${task?.emailNote && '- ('+ task.emailNote + ')'}`;
   
       // Add 4 spaces if status is not equal to "not started"
-      if (task.status !== "not started") {
+      if (task.status === "waiting for info") {
         formattedString = "    " + formattedString;
       }
   
@@ -31,6 +31,6 @@ export default function EmailOutput() {
   
  
   return (
-    <TextField fullWidth label='Email Note' value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={10} />
+    <TextField fullWidth label='Email Note' value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
   )
 }

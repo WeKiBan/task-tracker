@@ -29,7 +29,7 @@ export default function StatusSelect({setStatus, status, id}) {
           <MenuItem value='closed'>CLOSED</MenuItem>
           <MenuItem value='in dev'>IN DEV</MenuItem>
           <MenuItem value='in prod'>IN PROD</MenuItem>
-          <MenuItem value='waiting for info'>IN DEV</MenuItem>
+          <MenuItem value='waiting for info'>WAITING FOR INFO</MenuItem>
           <MenuItem value='in progress'>IN PROGRESS</MenuItem>
         </Select>
       </FormControl>

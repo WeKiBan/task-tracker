@@ -31,6 +31,6 @@ export default function EmailOutput() {
   
  
   return (
-    <TextField fullWidth label='Email Note' value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
+    <TextField className="" fullWidth label='Email Note' value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
   )
 }

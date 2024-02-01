@@ -1,21 +1,23 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
-import ActiveTasks from './routes/ActiveTasks';
+import Tasks from './routes/Tasks';
 import store from './store';
 import { Provider } from 'react-redux';
 import { CssBaseline } from '@mui/material';
-import ClosedTasks from './routes/ClosedTasks';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './components/theme';
 
 const App = () => {
   return (
     <Provider store={store}>
+      <ThemeProvider theme={theme}>
       <CssBaseline />
       <Layout>
         <Routes>
-          <Route path='/task-tracker/' element={<ActiveTasks />} />
-          <Route path='/task-tracker/closed-tasks' element={<ClosedTasks />} />
+          <Route path='/task-tracker/' element={<Tasks />} />
         </Routes>
       </Layout>
+      </ThemeProvider>
     </Provider>
   );
 };

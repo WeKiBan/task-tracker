@@ -4,17 +4,17 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { useDispatch } from 'react-redux';
+import { setStatus } from '../../taskSlice';
 
-export default function StatusSelect({setStatus, status, id}) {
+export default function StatusSelect({status, id}) {
   const dispatch = useDispatch()
   const handleChange = (e) => {
-    console.log(e.target.value);
     dispatch(setStatus({id, status: e.target.value}));
   }
 
   return (
     <Box sx={{ minWidth: 120, width: "100%" }}>
-      <FormControl fullWidth>
+      <FormControl fullWidth size="small">
         <InputLabel id="status-label">Status</InputLabel>
         <Select
           labelId="status-label"

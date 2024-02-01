@@ -5,7 +5,6 @@ const taskSlice = createSlice({
   initialState: [],
   reducers: {
     addTask: (state) => {
-      console.log('test fired');
       const newTask = {
         id: Date.now(),
         priority: "",

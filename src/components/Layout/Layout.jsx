@@ -1,30 +1,12 @@
-import { useDispatch } from 'react-redux';
-import { addTask } from '../../taskSlice';
-
-import Container from '@mui/material/Container';
-import TaskList from '../TaskList/TaskList';
-import { IconButton, Box } from '@mui/material';
-import { Add } from '@mui/icons-material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import EmailOutput from '../EmailOutput/EmailOutput';
+import { Box } from '@mui/material';
+import NavBar from '../Nav/Nav';
 
 
-export default function Layout() {
-  const dispatch = useDispatch();
-
-  const handleAddTask = () => {
-    dispatch(addTask());
-  };
+export default function Layout({ children }) {
   return (
-    <>
-       <Container maxWidth="lg" sx={{height: '100%', paddingTop: '40px', paddingBottom: '40px', display: "flex", justifyContent:"space-between", flexDirection: "column", gap: "20px"}}>
-        <IconButton onClick={handleAddTask} sx={{position: 'fixed', top: '20px', right: '30px'}}><Add sx={{fontSize: '50px'}}/></IconButton>
-        <IconButton onClick={handleAddTask} sx={{position: 'fixed', bottom: '280px', right: '30px'}}><ContentCopyIcon  sx={{fontSize: '50px'}}/></IconButton>
-        <Box boxShadow={2} sx={{overflow: "auto", flex: 1, border: "1px solid grey", padding: "5px" }}>
-          <TaskList/>
-        </Box>
-        <EmailOutput />
-      </Container>
-    </>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100%', maxHeight: '100%' }}>
+    <NavBar />
+    {children}
+    </Box>
   )
 }

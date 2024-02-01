@@ -34,7 +34,7 @@ export default function Task({ task }) {
   };
 
   return (
-    <Paper sx={{ width: '100%', border: '1px solid #274C77', display: 'flex', alignItems: 'center', padding: '10px', gap: '5px' }} elevation={3}>
+    <Paper sx={{ width: '100%', border: '1px solid #274C77', display: 'flex', alignItems: 'center', padding: '10px', gap: '5px', marginBottom: "10px" }} elevation={3}>
       <Grid container spacing={2} alignItems='start'>
         <Grid item xs={1} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <TextField fullWidth value={priority} onChange={e => handleChangePriority(e)} label='priority' variant='outlined' />

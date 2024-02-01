@@ -6,7 +6,7 @@ export default function EmailOutput() {
 
   const filterAndFormatTasks = (tasks) => {
     // Filter out tasks with completed: true
-    const filteredTasks = tasks.filter(task => !task.completed);
+    const filteredTasks = tasks.filter(task => task.status !== 'closed');
   
     // Order tasks by priority
     const orderedTasks = filteredTasks.sort((a, b) => (a.priority > b.priority) ? 1 : -1);

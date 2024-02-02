@@ -37,7 +37,7 @@ const taskSlice = createSlice({
       task.status = action.payload.status;
       // if task becomes closed remove priority
       if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
-        task.priority = null;
+        task.priority = 0;
       }
     },
     setPriority: (state, action) => {

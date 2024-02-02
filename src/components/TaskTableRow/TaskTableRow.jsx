@@ -1,14 +1,15 @@
 // TableRowComponent.js
-import { DeleteForever, Edit, Link } from '@mui/icons-material';
-import { TableCell, TableRow, IconButton, Box } from '@mui/material';
+import { DeleteForever, Edit, Link, ExpandMore, ExpandLess  } from '@mui/icons-material';
+import { TableCell, TableRow, IconButton, Box  } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import TextArea from '../TextArea/TextArea';
 import { useDispatch } from 'react-redux';
-import { deleteTask, setEmailNote } from '../../taskSlice';
+import { deleteTask, setEmailNote, changePriority } from '../../taskSlice';
+import { getStatusColor } from '../../utils/getStatusColor';
 
-const TaskTableRow = ({ task }) => {
+const TaskTableRow = ({ task, handleFilterTasks }) => {
   const dispatch = useDispatch();
-  const { id, priority, taskTicketText, status, projects, emailNote } = task;
+  const { id, taskTicketText, status, projects, emailNote } = task;
 
   const handleTextAreaChange = e => {
     dispatch(setEmailNote({ text: e.target.value, id }));
@@ -18,6 +19,13 @@ const TaskTableRow = ({ task }) => {
     dispatch(deleteTask(id));
   }
 
+  const handlePriorityChange = (increment) => {
+    dispatch(changePriority({ id, increment }));
+    handleFilterTasks();
+  };
+
+  const statusColor = getStatusColor(status);
+
   const handleGoToTicket = () => {
     const ticketNumber = taskTicketText.split(' ')[0]
     const address = `http://jira.internet.int/browse/${ticketNumber}`
@@ -25,8 +33,17 @@ const TaskTableRow = ({ task }) => {
   };
 
   return (
-    <TableRow key={id} sx={{ borderBottom: '1px solid rgba(224, 224, 224, 1)', height: '100%' }}>
-      <TableCell sx={{ padding: '5px', textAlign: "center" }}>{priority}</TableCell>
+    <TableRow key={id} sx={{ height: '100%' }}>
+        <TableCell sx={{ padding: '5px', textAlign: 'center', borderLeft: `15px solid ${statusColor}` }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '-10px' }}>
+          <IconButton onClick={() => handlePriorityChange(-1)}>
+            <ExpandLess />
+          </IconButton>
+          <IconButton onClick={() => handlePriorityChange(1)}>
+            <ExpandMore />
+          </IconButton>
+        </Box>
+      </TableCell>
       <TableCell sx={{ padding: '5px', width: '300px' }}>{taskTicketText}</TableCell>
       <TableCell sx={{ padding: '5px' }}>
         <StatusSelect status={status} id={id} />

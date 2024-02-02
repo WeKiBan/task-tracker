@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import { addTask } from '../../taskSlice';
 
 const AddTaskModal = ({ open, handleClose }) => {
-  const [priority, setPriority] = useState('');
   const [ticket, setTicket] = useState('');
   const [projects, setProjects] = useState('');
   const [emailNote, setEmailNote] = useState('');
@@ -17,7 +16,7 @@ const AddTaskModal = ({ open, handleClose }) => {
   };
 
   const handleAddTask = () => {
-    const payload = {priority, ticket, projects, emailNote, taskTicketText: ticket}
+    const payload = { ticket, projects, emailNote, taskTicketText: ticket}
     dispatch(addTask(payload))
     handleClose();
   };
@@ -29,15 +28,6 @@ const AddTaskModal = ({ open, handleClose }) => {
       title="Add Task"
       content={
         <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Priority"
-              variant="outlined"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-            />
-          </Grid>
           <Grid item xs={12}>
             <TextField
               fullWidth

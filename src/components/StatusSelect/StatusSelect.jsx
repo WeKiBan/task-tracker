@@ -25,7 +25,6 @@ export default function StatusSelect({status, id}) {
           defaultValue='not started'
         >
           <MenuItem value='not started'>NOT STARTED</MenuItem>
-          <MenuItem value='refused'>REFUSED</MenuItem>
           <MenuItem value='closed'>CLOSED</MenuItem>
           <MenuItem value='in dev'>IN DEV</MenuItem>
           <MenuItem value='in prod'>IN PROD</MenuItem>

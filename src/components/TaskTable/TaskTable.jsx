@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper} from '@mui/material';
 import TaskTableRow from '../TaskTableRow/TaskTableRow';
 
-const TaskTable = ({ tasks }) => {
+const TaskTable = ({ tasks, handleFilterTasks }) => {
   return (
     <TableContainer component={Paper} sx={{ height: "80vh", border: "1px solid rgba(224, 224, 224, 1);"}}>
       <Table stickyHeader>
@@ -16,7 +16,7 @@ const TaskTable = ({ tasks }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tasks.map((task) => <TaskTableRow key={task.id} task={task}/>)}
+          {tasks.map((task) => <TaskTableRow handleFilterTasks={handleFilterTasks} key={task.id} task={task}/>)}
         </TableBody>
       </Table>
     </TableContainer>

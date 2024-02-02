@@ -16,8 +16,9 @@ export default function Tasks() {
   const tasks = useSelector(state => state.tasks);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-  const [taskModalOpen, setTaskModalOpen] = useState('');
-  const [emailModalOpen, setEmailModalOpen] = useState('');
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+
 
   const tabs = [
     { label: 'active', value: 0 },
@@ -41,6 +42,9 @@ export default function Tasks() {
     setEmailModalOpen(!emailModalOpen)
   }
 
+  const handleFilterTasks = () => {
+    setFilteredTasks(filterTasks(tasks, !activeTab, searchValue));
+  } 
 
   useEffect(() => {
     setFilteredTasks(filterTasks(tasks, !activeTab, searchValue));
@@ -58,7 +62,7 @@ export default function Tasks() {
           <Email sx={{ fontSize: '30px' }} />
         </IconButton>
       </Box>
-      <TaskTable tasks={filteredTasks} />
+      <TaskTable handleFilterTasks={handleFilterTasks} tasks={filteredTasks} />
       <AddTaskModal open={taskModalOpen} handleClose={handleOpenCloseTaskModal} />
       <GenerateEmailModal open={emailModalOpen} handleClose={handleOpenCloseEmailModal} />
     </Container>

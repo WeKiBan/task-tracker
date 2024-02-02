@@ -5,11 +5,10 @@ const taskSlice = createSlice({
   initialState: [],
   reducers: {
     addTask: (state, action) => {
-      console.log('add task')
-      const { priority, emailNote, taskTicketText, projects } = action.payload;
+      const { emailNote, taskTicketText, projects } = action.payload;
       const newTask = {
         id: Date.now(),
-        priority,
+        priority: state.length + 1,
         emailNote,
         taskTicketText,
         projects,
@@ -53,7 +52,29 @@ const taskSlice = createSlice({
         state.splice(index, 1);
       }
     },
+    changePriority: (state, action) => {
+      const { id, increment } = action.payload;
+      const task = state.find(task => task.id === id);
+
+      if (task) {
+        const newPriority = task.priority + increment;
+
+        // Ensure the new priority is within bounds
+        if (newPriority < 1 || newPriority > state.length) {
+          return;
+        }
+
+        // Find the substitute task based on priority
+        const substituteTask = state.find(t => t.priority === newPriority);
+
+        if (substituteTask) {
+          const substituteTaskIncrement = increment > 0 ? -1 : 1;
+          substituteTask.priority += substituteTaskIncrement;
+          task.priority = newPriority;
+        }
+      }
+    },
   },
 });
-export const { addTask, toggleComplete, deleteTask, setEmailNote, setNote, setProject, setPriority, setTaskTicketText, setStatus } = taskSlice.actions;
+export const { addTask, toggleComplete, deleteTask, setEmailNote, setNote, setProject, setPriority, setTaskTicketText, setStatus, changePriority } = taskSlice.actions;
 export default taskSlice.reducer;

@@ -2,9 +2,10 @@ import { useSelector } from "react-redux";
 import { TextField } from '@mui/material';
 
 export default function EmailOutput({textFieldRef}) {
-  const tasks = useSelector((state) => state.tasks);
+  const {tasks, settings} = useSelector((state) => state);
+  const {emailHeader, emailFooter} = settings;
 
-
+  console.log(emailFooter, emailHeader)
 
   const filterAndFormatTasks = (tasks) => {
     // Filter out tasks with completed: true
@@ -21,12 +22,14 @@ export default function EmailOutput({textFieldRef}) {
       if (task.status === "waiting for info") {
         formattedString = "    " + formattedString;
       }
-  
+
       return formattedString;
     });
+
+    const headerFooterTasks = [emailHeader, ...formattedTasks, emailFooter]
   
     // Concatenate formatted strings with line breaks
-    const resultString = formattedTasks.join('\n');
+    const resultString = headerFooterTasks.join('\n');
   
     return resultString;
   };

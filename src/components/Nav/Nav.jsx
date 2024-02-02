@@ -1,49 +1,32 @@
-import { useState } from 'react';
-import { AppBar, Drawer, List, ListItem, ListItemText, Toolbar, Typography, IconButton } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, Toolbar, Typography, IconButton, Box, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-const NavBar = () => {
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
+const Nav = () => {
+  let navigate = useNavigate();
 
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!isDrawerOpen);
-  };
-
-  const handleOptionClick = () => {
-    setDrawerOpen(false);
+  const handleOptionClick = page => {
+    navigate(page);
   };
 
   return (
     <>
       {/* Material-UI AppBar */}
-      <AppBar position="static">
-        <Toolbar sx={{justifyContent: "space-between"}}>
-          <Typography variant="h6">Task Tracker</Typography>
-          <IconButton onClick={handleDrawerToggle}><MenuIcon sx={{fontSize: "50px"}}/></IconButton>
+      <AppBar position='static'>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Typography variant='h6'>Task Tracker</Typography>
+          <Box sx={{display: "flex", gap: '10px'}}>
+            <Button sx={{fontSize: "20px"}} fullWidth color='success' variant='secondary' onClick={() => handleOptionClick('/task-tracker/')}>
+              Tasks
+            </Button>
+            <IconButton onClick={() => handleOptionClick('/task-tracker/settings')}>
+              <SettingsIcon sx={{fontSize: '40px'}} />
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
-
-      {/* Material-UI Drawer for Side Menu */}
-      <Drawer anchor="left" open={isDrawerOpen} onClose={handleDrawerToggle}>
-        <List>
-          {/* Active Tasks Option */}
-          <ListItem
-
-            onClick={() => handleOptionClick('active')}
-          >
-            <ListItemText primary="Active Tasks" />
-          </ListItem>
-
-          {/* Closed Tasks Option */}
-          <ListItem
-            onClick={() => handleOptionClick('closed')}
-          >
-            <ListItemText primary="Closed Tasks" />
-          </ListItem>
-        </List>
-      </Drawer>
     </>
   );
 };
 
-export default NavBar;
+export default Nav;

@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import Tasks from './routes/Tasks';
+import Settings from './routes/Settings';
 import store from './redux/store';
 import { Provider } from 'react-redux';
 import { CssBaseline } from '@mui/material';
@@ -15,6 +16,7 @@ const App = () => {
       <Layout>
         <Routes>
           <Route path='/task-tracker/' element={<Tasks />} />
+          <Route path='/task-tracker/settings' element={<Settings />} />
         </Routes>
       </Layout>
       </ThemeProvider>

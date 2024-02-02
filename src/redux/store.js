@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 import tasksReducer from './taskSlice'; 
 import snackbarReducer from './snackbarSlice';
+import settingsReducer from './settingsSlice'
 
 // Load state from local storage
 const loadState = () => {
@@ -27,6 +28,7 @@ const saveState = (state) => {
 const rootReducer = combineReducers({
   tasks: tasksReducer,
   snackbar: snackbarReducer,
+  settings: settingsReducer
   // Add other reducers here
 });
 

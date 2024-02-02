@@ -20,7 +20,7 @@ export default function EmailOutput({textFieldRef}) {
   
       // Add 4 spaces if status is not equal to "not started"
       if (task.status === "waiting for info") {
-        formattedString = "    " + formattedString;
+        formattedString = "            " + formattedString;
       }
 
       return formattedString;

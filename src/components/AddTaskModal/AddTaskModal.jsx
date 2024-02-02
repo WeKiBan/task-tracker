@@ -61,13 +61,13 @@ const AddTaskModal = ({ open, handleClose }) => {
         {
           label: 'Cancel',
           function: handleCancel,
-          color: 'default',
-          variant: 'outlined',
+          color: 'primary',
+          variant: 'contained',
         },
         {
           label: 'Add',
           function: handleAddTask,
-          color: 'primary',
+          color: 'success',
           variant: 'contained',
         },
       ]}

@@ -10,10 +10,10 @@ const ModalComponent = ({ open, handleClose, title, content, buttons, width = 40
         <Typography variant='body1' component='div'>
           {content}
         </Typography>
-        <Box sx={{ display: 'flex', gap: '20px', justifyContent: "space-around" }}>
+        <Box sx={{ display: 'flex', gap: '10px' }}>
           {buttons &&
             buttons.map((button, index) => (
-              <Button key={index} onClick={button.function} sx={{ mt: 2, mr: 2 }}>
+              <Button fullWidth color={button.color} variant={button.variant} key={index} onClick={button.function} sx={{ mt: 2 }}>
                 {button.label}
               </Button>
             ))}

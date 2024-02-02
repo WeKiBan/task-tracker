@@ -36,13 +36,13 @@ const GenerateEmailModal = ({ open, handleClose }) => {
         {
           label: 'Cancel',
           function: handleCancel,
-          color: 'default',
-          variant: 'outlined',
+          color: 'primary',
+          variant: 'contained',
         },
         {
           label: 'Copy',
           function: handleCopyText,
-          color: 'primary',
+          color: 'success',
           variant: 'contained',
         },
       ]}

@@ -3,6 +3,7 @@ import {  TextField, Grid } from '@mui/material';
 import Modal from '../Modal/Modal'
 import { useDispatch } from 'react-redux';
 import { addTask } from '../../redux/taskSlice';
+import { showSnackbar } from '../../redux/snackbarSlice';
 
 const AddTaskModal = ({ open, handleClose }) => {
   const [ticket, setTicket] = useState('');
@@ -18,8 +19,14 @@ const AddTaskModal = ({ open, handleClose }) => {
   const handleAddTask = () => {
     const payload = { projects, emailNote, taskTicketText: ticket}
     dispatch(addTask(payload))
+    handleShowSnackbar();
     handleClose();
   };
+
+  const handleShowSnackbar = () => {
+    dispatch(showSnackbar({ message: 'Task added successfully',
+    color: 'success',}))
+  }
 
   return (
     <Modal

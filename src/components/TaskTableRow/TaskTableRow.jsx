@@ -4,10 +4,10 @@ import { TableCell, TableRow, IconButton, Box } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import TextArea from '../TextArea/TextArea';
 import { useDispatch } from 'react-redux';
-import { deleteTask, setEmailNote, changePriority } from '../../redux/taskSlice';
+import { setEmailNote, changePriority } from '../../redux/taskSlice';
 import { getStatusColor } from '../../utils/getStatusColor';
 
-const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEditTaskModal }) => {
+const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEditTaskModal, handleOpenCloseDeleteTaskModal }) => {
   const dispatch = useDispatch();
   const { id, taskTicketText, status, projects, emailNote } = task;
 
@@ -16,7 +16,7 @@ const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEdit
   };
 
   const handleDeleteTask = () => {
-    dispatch(deleteTask(id));
+    handleOpenCloseDeleteTaskModal(task);
   };
 
   const handlePriorityChange = increment => {

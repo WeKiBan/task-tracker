@@ -11,6 +11,7 @@ import SearchBar from '../components/searchBar/SearchBar';
 import AddTaskModal from '../components/AddTaskModal/AddTaskModal';
 import GenerateEmailModal from '../components/GenerateEmailModal/GenerateEmailModal';
 import EditTaskModal from '../components/EditTaskModal/EditTaskModal';
+import DeleteTaskModal from '../components/DeleteTaskModal/DeleteTaskModal';
 
 export default function Tasks() {
   const [activeTab, setActiveTab] = useState(0);
@@ -20,6 +21,7 @@ export default function Tasks() {
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [editTaskModalOpen, setEditTaskModalOpen] = useState(false);
+  const [deleteTaskModalOpen, setDeleteTaskModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
 
@@ -44,11 +46,19 @@ export default function Tasks() {
   const handleOpenCloseEmailModal = () => {
     setEmailModalOpen(!emailModalOpen)
   }
+
   const handleOpenCloseEditTaskModal = (task) => {
     console.log('task', task)
     if(editTaskModalOpen) task = null;
     handleSetSelectedTask(task)
     setEditTaskModalOpen(!editTaskModalOpen)
+  }
+
+  const handleOpenCloseDeleteTaskModal = (task) => {
+    console.log('task', task)
+    if(deleteTaskModalOpen) task = null;
+    handleSetSelectedTask(task)
+    setDeleteTaskModalOpen(!deleteTaskModalOpen)
   }
 
   const handleFilterTasks = () => {
@@ -75,10 +85,11 @@ export default function Tasks() {
           <Email sx={{ fontSize: '30px' }} />
         </IconButton>
       </Box>
-      <TaskTable handleFilterTasks={handleFilterTasks} handleOpenCloseEditTaskModal={handleOpenCloseEditTaskModal} tasks={filteredTasks} showActive={!activeTab} />
+      <TaskTable handleFilterTasks={handleFilterTasks} handleOpenCloseEditTaskModal={handleOpenCloseEditTaskModal} tasks={filteredTasks} showActive={!activeTab} handleOpenCloseDeleteTaskModal={handleOpenCloseDeleteTaskModal} />
       <AddTaskModal open={taskModalOpen} handleClose={handleOpenCloseTaskModal} />
       <GenerateEmailModal open={emailModalOpen} handleClose={handleOpenCloseEmailModal} />
       <EditTaskModal open={editTaskModalOpen} handleClose={handleOpenCloseEditTaskModal} task={selectedTask} />
+      <DeleteTaskModal open={deleteTaskModalOpen} handleClose={handleOpenCloseDeleteTaskModal} task={selectedTask} />
     </Container>
   );
 }

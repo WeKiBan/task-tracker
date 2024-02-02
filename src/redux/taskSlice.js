@@ -32,7 +32,7 @@ const taskSlice = createSlice({
       const task = state.find(task => task.id === action.payload.id);
       // if task was closed previously and is changed back to an active task put it to the bottom of the priority
       if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
-        task.priority = state.filter(task => task.priority).length;
+        task.priority = state.filter(task => task.priority).length + 1;
       }
       task.status = action.payload.status;
       // if task becomes closed remove priority

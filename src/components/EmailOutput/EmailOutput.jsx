@@ -1,8 +1,10 @@
 import { useSelector } from "react-redux";
 import { TextField } from '@mui/material';
 
-export default function EmailOutput() {
+export default function EmailOutput({textFieldRef}) {
   const tasks = useSelector((state) => state.tasks);
+
+
 
   const filterAndFormatTasks = (tasks) => {
     // Filter out tasks with completed: true
@@ -31,6 +33,6 @@ export default function EmailOutput() {
   
  
   return (
-    <TextField className="" fullWidth label='Email Note' value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
+    <TextField ref={textFieldRef} fullWidth value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
   )
 }

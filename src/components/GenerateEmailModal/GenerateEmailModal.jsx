@@ -1,37 +1,37 @@
-import Modal from '../Modal/Modal'
-import EmailOutput from "../EmailOutput/EmailOutput"
+import Modal from '../Modal/Modal';
+import EmailOutput from '../EmailOutput/EmailOutput';
+import { useRef } from 'react';
 
 const GenerateEmailModal = ({ open, handleClose }) => {
-
   const handleCancel = () => {
     handleClose();
   };
 
-  const  handleCopyText = (textareaRef) => {
-  // Check if the textarea reference is not null
-  if (textareaRef.current) {
-    // Select the text in the textarea
-    textareaRef.current.select();
+  const textFieldRef = useRef(null);
 
-    // Execute the copy command
-    document.execCommand('copy');
+  const handleCopyText = () => {
+    console.log('copy');
+    // Check if the textarea reference is not null
+    if (textFieldRef.current) {
+      const textArea = textFieldRef.current.querySelectorAll('textarea')[0];
 
-    // Deselect the text to avoid unwanted visual effects
-    window.getSelection().removeAllRanges();
-  }
+      // Select the text in the textarea
+      textArea.select();
+      // // Execute the copy command
+      document.execCommand('copy');
 
-
+      // // Deselect the text to avoid unwanted visual effects
+      window.getSelection().removeAllRanges();
+    }
   };
-
 
   return (
     <Modal
       open={open}
       handleClose={handleClose}
-      title="Email"
-      content={
-        <EmailOutput />
-      }
+      title='Generated Daily Email...'
+      width='60vw'
+      content={<EmailOutput textFieldRef={textFieldRef} />}
       buttons={[
         {
           label: 'Cancel',

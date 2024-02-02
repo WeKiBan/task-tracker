@@ -62,7 +62,7 @@ export default function Tasks() {
           <Email sx={{ fontSize: '30px' }} />
         </IconButton>
       </Box>
-      <TaskTable handleFilterTasks={handleFilterTasks} tasks={filteredTasks} />
+      <TaskTable handleFilterTasks={handleFilterTasks} tasks={filteredTasks} showActive={!activeTab} />
       <AddTaskModal open={taskModalOpen} handleClose={handleOpenCloseTaskModal} />
       <GenerateEmailModal open={emailModalOpen} handleClose={handleOpenCloseEmailModal} />
     </Container>

@@ -10,7 +10,6 @@ const GenerateEmailModal = ({ open, handleClose }) => {
   const textFieldRef = useRef(null);
 
   const handleCopyText = () => {
-    console.log('copy');
     // Check if the textarea reference is not null
     if (textFieldRef.current) {
       const textArea = textFieldRef.current.querySelectorAll('textarea')[0];

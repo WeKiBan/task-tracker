@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { useDispatch } from 'react-redux';
-import { setStatus } from '../../taskSlice';
+import { setStatus } from '../../redux/taskSlice';
 
 export default function StatusSelect({status, id}) {
   const dispatch = useDispatch()
@@ -25,11 +25,12 @@ export default function StatusSelect({status, id}) {
           defaultValue='not started'
         >
           <MenuItem value='not started'>NOT STARTED</MenuItem>
-          <MenuItem value='closed'>CLOSED</MenuItem>
           <MenuItem value='in dev'>IN DEV</MenuItem>
           <MenuItem value='in prod'>IN PROD</MenuItem>
-          <MenuItem value='waiting for info'>WAITING FOR INFO</MenuItem>
           <MenuItem value='in progress'>IN PROGRESS</MenuItem>
+          <MenuItem value='waiting for info'>WAITING FOR INFO</MenuItem>
+          <MenuItem value='closed'>CLOSED</MenuItem>
+          <MenuItem value='reassigned'>REASSIGNED</MenuItem>
         </Select>
       </FormControl>
     </Box>

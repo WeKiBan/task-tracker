@@ -4,10 +4,10 @@ import { TableCell, TableRow, IconButton, Box } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import TextArea from '../TextArea/TextArea';
 import { useDispatch } from 'react-redux';
-import { deleteTask, setEmailNote, changePriority } from '../../taskSlice';
+import { deleteTask, setEmailNote, changePriority } from '../../redux/taskSlice';
 import { getStatusColor } from '../../utils/getStatusColor';
 
-const TaskTableRow = ({ task, handleFilterTasks, showActive }) => {
+const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEditTaskModal }) => {
   const dispatch = useDispatch();
   const { id, taskTicketText, status, projects, emailNote } = task;
 
@@ -54,13 +54,13 @@ const TaskTableRow = ({ task, handleFilterTasks, showActive }) => {
       </TableCell>
       <TableCell sx={{ padding: '5px' }}>
         <Box sx={{ display: 'flex', gap: '5px', flexWrap: 'no wrap' }}>
-          <IconButton>
+          <IconButton color='primary' onClick={() => handleOpenCloseEditTaskModal(task)}>
             <Edit />
           </IconButton>
-          <IconButton onClick={handleGoToTicket}>
+          <IconButton color='primary' onClick={handleGoToTicket}>
             <Link />
           </IconButton>
-          <IconButton onClick={handleDeleteTask}>
+          <IconButton color='primary' onClick={handleDeleteTask}>
             <DeleteForever />
           </IconButton>
         </Box>

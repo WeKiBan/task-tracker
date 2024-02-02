@@ -1,7 +1,7 @@
 import { Grid, Paper, IconButton, TextField } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import { useDispatch } from 'react-redux';
-import { deleteTask, setEmailNote, setProject, setPriority, setTaskTicketText, setStatus } from '../../taskSlice';
+import { deleteTask, setEmailNote, setProject, setPriority, setTaskTicketText, setStatus } from '../../redux/taskSlice';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Task({ task }) {

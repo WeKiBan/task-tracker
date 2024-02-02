@@ -1,23 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {  TextField, Grid } from '@mui/material';
 import Modal from '../Modal/Modal'
-import { useDispatch } from 'react-redux';
-import { addTask } from '../../redux/taskSlice';
+import { useDispatch} from 'react-redux';
+import { editTask } from '../../redux/taskSlice';
 
-const AddTaskModal = ({ open, handleClose }) => {
+
+
+const EditTaskModal = ({ open, handleClose, task }) => {
   const [ticket, setTicket] = useState('');
   const [projects, setProjects] = useState('');
   const [emailNote, setEmailNote] = useState('');
-
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (task) {
+      setTicket(task.taskTicketText || '');
+      setProjects(task.projects || '');
+      setEmailNote(task.emailNote || '');
+    }
+  }, [task]);
 
   const handleCancel = () => {
     handleClose();
   };
 
-  const handleAddTask = () => {
-    const payload = { projects, emailNote, taskTicketText: ticket}
-    dispatch(addTask(payload))
+  const handleEditTask = () => {
+    const payload = { id: task.id, projects, emailNote, taskTicketText: ticket}
+    dispatch(editTask(payload))
     handleClose();
   };
 
@@ -25,7 +34,7 @@ const AddTaskModal = ({ open, handleClose }) => {
     <Modal
       open={open}
       handleClose={handleClose}
-      title="Add Task"
+      title="Edit Task"
       content={
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -65,8 +74,8 @@ const AddTaskModal = ({ open, handleClose }) => {
           variant: 'contained',
         },
         {
-          label: 'Add',
-          function: handleAddTask,
+          label: 'Submit',
+          function: handleEditTask,
           color: 'success',
           variant: 'contained',
         },
@@ -75,4 +84,4 @@ const AddTaskModal = ({ open, handleClose }) => {
   );
 };
 
-export default AddTaskModal;
+export default EditTaskModal;

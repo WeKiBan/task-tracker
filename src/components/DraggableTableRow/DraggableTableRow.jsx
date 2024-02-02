@@ -4,7 +4,7 @@ import { TableCell, TableRow, IconButton, Box } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import TextArea from '../TextArea/TextArea';
 import { useDispatch } from 'react-redux';
-import { deleteTask, setEmailNote } from '../../taskSlice';
+import { deleteTask, setEmailNote } from '../../redux/taskSlice';
 import { Draggable } from 'react-beautiful-dnd';
 
 const TaskTableRow = ({ task, provided, dragHandleProps }) => {

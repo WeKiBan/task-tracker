@@ -31,12 +31,12 @@ const taskSlice = createSlice({
     setStatus: (state, action) => {
       const task = state.find(task => task.id === action.payload.id);
       // if task was closed previously and is changed back to an active task put it to the bottom of the priority
-      if(task.status === 'closed') {
+      if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
         task.priority = state.filter(task => task.priority).length;
       }
       task.status = action.payload.status;
       // if task becomes closed remove priority
-      if(action.payload.status === 'closed') {
+      if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
         task.priority = null;
       }
     },
@@ -82,7 +82,14 @@ const taskSlice = createSlice({
         }
       }
     },
+    editTask: (state, action) => {
+      const task = state.find(task => task.id === action.payload.id);
+      task.emailNote = action.payload.emailNote;
+      task.taskTicketText = action.payload.taskTicketText;
+      task.projects = action.payload.projects;
+    }
   },
 });
-export const { addTask, toggleComplete, deleteTask, setEmailNote, setNote, setProject, setPriority, setTaskTicketText, setStatus, changePriority } = taskSlice.actions;
+
+export const { addTask, toggleComplete, deleteTask, setEmailNote, setNote, setProject, setPriority, setTaskTicketText, setStatus, changePriority, editTask } = taskSlice.actions;
 export default taskSlice.reducer;

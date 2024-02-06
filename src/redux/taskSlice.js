@@ -32,7 +32,7 @@ const taskSlice = createSlice({
       const activeTasks = state.filter(task => task.status !== 'closed' && task.status !== 'reassigned');
       
       // If task was closed previously and is changed back to an active task, put it to the bottom of the array
-      if (action.payload.status !== 'closed' && action.payload.status !== 'reassigned' && task.status !== 'closed' && task.status !== 'reassigned') {
+      if (action.payload.status !== 'closed' && action.payload.status !== 'reassigned' && task.status === 'closed' || task.status === 'reassigned') {
         const indexOfTask = state.indexOf(task);
         state.splice(indexOfTask, 1);
         state.splice(activeTasks.length, 0, task);

@@ -8,7 +8,6 @@ const taskSlice = createSlice({
       const { emailNote, taskTicketText, projects } = action.payload;
       const newTask = {
         id: Date.now(),
-        priority: state.length + 1,
         emailNote,
         taskTicketText,
         projects,
@@ -30,19 +29,24 @@ const taskSlice = createSlice({
     },
     setStatus: (state, action) => {
       const task = state.find(task => task.id === action.payload.id);
-      // if task was closed previously and is changed back to an active task put it to the bottom of the priority
-      if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
-        task.priority = state.filter(task => task.priority).length + 1;
+      const activeTasks = state.filter(task => task.status !== 'closed' && task.status !== 'reassigned');
+      
+      // If task was closed previously and is changed back to an active task, put it to the bottom of the array
+      if (action.payload.status !== 'closed' && action.payload.status !== 'reassigned' && task.status !== 'closed' && task.status !== 'reassigned') {
+        const indexOfTask = state.indexOf(task);
+        state.splice(indexOfTask, 1);
+        state.splice(activeTasks.length, 0, task);
       }
+    
+      // Update task status
       task.status = action.payload.status;
-      // if task becomes closed remove priority
-      if(action.payload.status === 'closed'|| action.payload.status === 'reassigned') {
-        task.priority = 0;
+    
+      // If task becomes closed or reassigned, remove priority
+      if (action.payload.status === 'closed' || action.payload.status === 'reassigned') {
+        const indexOfTask = state.indexOf(task);
+        state.splice(indexOfTask, 1);
+        state.push(task);
       }
-    },
-    setPriority: (state, action) => {
-      const task = state.find(task => task.id === action.payload.id);
-      task.priority = action.payload.text;
     },
     setTaskTicketText: (state, action) => {
       const task = state.find(task => task.id === action.payload.id);
@@ -61,25 +65,15 @@ const taskSlice = createSlice({
       }
     },
     changePriority: (state, action) => {
-      const { id, increment } = action.payload;
-      const task = state.find(task => task.id === id);
-
-      if (task) {
-        const newPriority = task.priority + increment;
-
-        // Ensure the new priority is within bounds
-        if (newPriority < 1 || newPriority > state.length) {
-          return;
-        }
-
-        // Find the substitute task based on priority
-        const substituteTask = state.find(t => t.priority === newPriority);
-
-        if (substituteTask) {
-          const substituteTaskIncrement = increment > 0 ? -1 : 1;
-          substituteTask.priority += substituteTaskIncrement;
-          task.priority = newPriority;
-        }
+      const task = state.find(task => task.id === action.payload.id);
+      const activeTasks = state.filter(task => task.status !== 'closed' && task.status !== 'reassigned');
+      const { increment } = action.payload;
+      const indexOfTask = state.indexOf(task);
+      
+      const newIndex = indexOfTask + increment;
+      if (newIndex >= 0 && newIndex <= activeTasks.length - 1) {
+        state.splice(indexOfTask, 1);
+        state.splice(newIndex, 0, task);
       }
     },
     editTask: (state, action) => {

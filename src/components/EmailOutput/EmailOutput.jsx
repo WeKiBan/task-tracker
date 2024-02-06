@@ -11,11 +11,8 @@ export default function EmailOutput({textFieldRef}) {
     // Filter out tasks with completed: true
     const filteredTasks = tasks.filter(task => task.status !== 'closed');
   
-    // Order tasks by priority
-    const orderedTasks = filteredTasks.sort((a, b) => (a.priority > b.priority) ? 1 : -1);
-  
     // Format and modify tasks
-    const formattedTasks = orderedTasks.map(task => {
+    const formattedTasks = filteredTasks.map(task => {
       let formattedString = `${task.taskTicketText} ${task?.emailNote && '- ('+ task.emailNote + ')'}`;
   
       // Add 4 spaces if status is not equal to "not started"

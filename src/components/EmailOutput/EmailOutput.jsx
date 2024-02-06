@@ -5,8 +5,6 @@ export default function EmailOutput({textFieldRef}) {
   const {tasks, settings} = useSelector((state) => state);
   const {emailHeader, emailFooter} = settings;
 
-  console.log(emailFooter, emailHeader)
-
   const filterAndFormatTasks = (tasks) => {
     // Filter out tasks with completed: true
     const filteredTasks = tasks.filter(task => task.status !== 'closed');

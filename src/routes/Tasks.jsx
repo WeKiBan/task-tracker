@@ -48,14 +48,12 @@ export default function Tasks() {
   }
 
   const handleOpenCloseEditTaskModal = (task) => {
-    console.log('task', task)
     if(editTaskModalOpen) task = null;
     handleSetSelectedTask(task)
     setEditTaskModalOpen(!editTaskModalOpen)
   }
 
   const handleOpenCloseDeleteTaskModal = (task) => {
-    console.log('task', task)
     if(deleteTaskModalOpen) task = null;
     handleSetSelectedTask(task)
     setDeleteTaskModalOpen(!deleteTaskModalOpen)

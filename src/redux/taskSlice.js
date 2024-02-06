@@ -71,7 +71,6 @@ const taskSlice = createSlice({
       const indexOfTask = activeTasks.indexOf(task);
       
       const newIndex = indexOfTask + increment;
-      console.log(newIndex, activeTasks.length -1)
       if (newIndex >= 0 && newIndex <= activeTasks.length - 1) {
         state.splice(indexOfTask, 1);
         state.splice(newIndex, 0, task);

@@ -68,9 +68,10 @@ const taskSlice = createSlice({
       const task = state.find(task => task.id === action.payload.id);
       const activeTasks = state.filter(task => task.status !== 'closed' && task.status !== 'reassigned');
       const { increment } = action.payload;
-      const indexOfTask = state.indexOf(task);
+      const indexOfTask = activeTasks.indexOf(task);
       
       const newIndex = indexOfTask + increment;
+      console.log(newIndex, activeTasks.length -1)
       if (newIndex >= 0 && newIndex <= activeTasks.length - 1) {
         state.splice(indexOfTask, 1);
         state.splice(newIndex, 0, task);

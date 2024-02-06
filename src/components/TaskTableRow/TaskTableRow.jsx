@@ -11,7 +11,7 @@ const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEdit
   const dispatch = useDispatch();
   const { id, taskTicketText, status, projects, emailNote } = task;
 
-  const handleTextAreaChange = e => {
+  const handleTextAreaBlur = e => {
     dispatch(setEmailNote({ text: e.target.value, id }));
   };
 
@@ -50,7 +50,7 @@ const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEdit
       </TableCell>
       <TableCell sx={{ padding: '5px', width: '150px' }}>{projects}</TableCell>
       <TableCell sx={{ padding: '5px' }}>
-        <TextArea rows={1} text={emailNote} handleChange={handleTextAreaChange} />
+        <TextArea rows={1} text={emailNote} handleBlur={handleTextAreaBlur} />
       </TableCell>
       <TableCell sx={{ padding: '5px' }}>
         <Box sx={{ display: 'flex', gap: '5px', flexWrap: 'no wrap' }}>

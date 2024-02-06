@@ -31,6 +31,6 @@ export default function EmailOutput({textFieldRef}) {
   
  
   return (
-    <TextField ref={textFieldRef} fullWidth value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
+    <TextField disabled ref={textFieldRef} fullWidth value={filterAndFormatTasks(tasks)} placeholder='...'  multiline rows={4} />
   )
 }

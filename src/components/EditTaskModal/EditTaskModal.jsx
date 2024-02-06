@@ -21,8 +21,15 @@ const EditTaskModal = ({ open, handleClose, task }) => {
     }
   }, [task]);
 
+  const handleClearInputs = () => {
+    setTicket('');
+    setProjects('');
+    setEmailNote('');
+  }
+
   const handleCancel = () => {
     handleClose();
+    handleClearInputs();
   };
 
   const handleEditTask = () => {
@@ -30,6 +37,7 @@ const EditTaskModal = ({ open, handleClose, task }) => {
     dispatch(editTask(payload));
     handleShowSnackbar();
     handleClose();
+    handleClearInputs();
   };
 
   const handleShowSnackbar = () => {

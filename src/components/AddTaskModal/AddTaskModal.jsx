@@ -14,13 +14,21 @@ const AddTaskModal = ({ open, handleClose }) => {
 
   const handleCancel = () => {
     handleClose();
+    handleClearInputs();
   };
+
+  const handleClearInputs = () => {
+    setTicket('');
+    setProjects('');
+    setEmailNote('');
+  }
 
   const handleAddTask = () => {
     const payload = { projects, emailNote, taskTicketText: ticket}
     dispatch(addTask(payload))
     handleShowSnackbar();
     handleClose();
+    handleClearInputs();
   };
 
   const handleShowSnackbar = () => {

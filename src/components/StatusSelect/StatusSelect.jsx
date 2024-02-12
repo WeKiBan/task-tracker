@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { useDispatch } from 'react-redux';
-import { setStatus } from '../../redux/taskSlice';
+import { setStatus } from '../../redux/slices/taskSlice';
 
 export default function StatusSelect({status, id}) {
   const dispatch = useDispatch()

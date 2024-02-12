@@ -21,6 +21,7 @@
     "@mui/material": "^5.15.7",
     "@mui/styled-engine-sc": "^6.0.0-alpha.14",
     "@reduxjs/toolkit": "^2.1.0",
+    "firebase": "^10.8.0",
     "gh-pages": "^6.1.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",

@@ -1,8 +1,8 @@
 import { Typography } from '@mui/material';
 import Modal from '../Modal/Modal';
 import { useDispatch } from 'react-redux';
-import { deleteTask } from '../../redux/taskSlice';
-import { showSnackbar } from '../../redux/snackbarSlice';
+import { deleteTask } from '../../redux/slices/taskSlice';
+import { showSnackbar } from '../../redux/slices/snackbarSlice';
 
 const DeleteTaskModal = ({ open, handleClose, task }) => {
   const dispatch = useDispatch();

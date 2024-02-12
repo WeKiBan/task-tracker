@@ -1,6 +1,6 @@
 import { TextField, Container, Typography, Box } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { setEmailHeader, setEmailFooter } from '../redux/settingsSlice';
+import { setEmailHeader, setEmailFooter } from '../redux/slices/settingsSlice';
 
 
 const Settings = () => {

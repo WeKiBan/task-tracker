@@ -1,4 +1,4 @@
-import { statusColors } from "../config"
+import { statusColors } from "../constants/statusColors"
 
 export const getStatusColor = (status) => {
   // Split the status string into words

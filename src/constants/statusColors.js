@@ -6,5 +6,4 @@ export const statusColors  =  {
     inDev: '#FFC233',
     waitingForInfo: '#FF331F',
     reassigned: '#9966cc'
-
 }

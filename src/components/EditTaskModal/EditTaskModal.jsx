@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import {  TextField, Grid } from '@mui/material';
 import Modal from '../Modal/Modal'
 import { useDispatch} from 'react-redux';
-import { editTask } from '../../redux/taskSlice';
-import { showSnackbar } from '../../redux/snackbarSlice';
+import { editTask } from '../../redux/slices/taskSlice';
+import { showSnackbar } from '../../redux/slices/snackbarSlice';
 
 
 

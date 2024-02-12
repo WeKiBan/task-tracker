@@ -2,8 +2,8 @@ import { useState } from 'react';
 import {  TextField, Grid } from '@mui/material';
 import Modal from '../Modal/Modal'
 import { useDispatch } from 'react-redux';
-import { addTask } from '../../redux/taskSlice';
-import { showSnackbar } from '../../redux/snackbarSlice';
+import { addTask } from '../../redux/slices/taskSlice';
+import { showSnackbar } from '../../redux/slices/snackbarSlice';
 
 const AddTaskModal = ({ open, handleClose }) => {
   const [ticket, setTicket] = useState('');

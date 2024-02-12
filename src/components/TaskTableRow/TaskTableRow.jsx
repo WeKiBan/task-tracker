@@ -4,7 +4,7 @@ import { TableCell, TableRow, IconButton, Box } from '@mui/material';
 import StatusSelect from '../StatusSelect/StatusSelect';
 import TextArea from '../TextArea/TextArea';
 import { useDispatch } from 'react-redux';
-import { setEmailNote, changePriority } from '../../redux/taskSlice';
+import { setEmailNote, changePriority } from '../../redux/slices/taskSlice';
 import { getStatusColor } from '../../utils/getStatusColor';
 
 const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEditTaskModal, handleOpenCloseDeleteTaskModal }) => {

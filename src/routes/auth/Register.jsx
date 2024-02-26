@@ -1,12 +1,15 @@
-import { auth, googleProvider } from '../../config/firebase';
+import { auth, googleProvider, db } from '../../config/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleUsernameChange = event => {
     setUsername(event.target.value);
@@ -18,17 +21,29 @@ const Register = () => {
 
   const handleSubmit = event => {
     event.preventDefault();
-    // Here you can add your logic for handling login
-    console.log('Username:', username);
-    console.log('Password:', password);
     // Reset form fields
     setUsername('');
     setPassword('');
   };
 
+  const handleCreateUserCollection = async userCredential => {
+    const { uid: userID, email } = userCredential.user;
+
+    await setDoc(doc(db, 'users', userID), {
+      userID: userID,
+      email,
+    });
+
+    await setDoc(doc(db, `users/${userID}/tasks/`, 'tasks'), { activeTasks: [], inactiveTasks: [] });
+  };
+
   const handleRegister = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, username, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, username, password);
+
+      await handleCreateUserCollection(userCredential);
+
+      navigate('/task-tracker/');
     } catch (err) {
       console.error(err);
     }
@@ -36,7 +51,11 @@ const Register = () => {
 
   const handleRegisterWithGoogle = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const userCredential = await signInWithPopup(auth, googleProvider);
+
+      await handleCreateUserCollection(userCredential);
+
+      navigate('/task-tracker/');
     } catch (err) {
       console.error(err);
     }

@@ -1,48 +1,32 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { combineReducers } from 'redux';
-import tasksReducer from './slices/taskSlice'; 
-import snackbarReducer from './slices/snackbarSlice';
-import settingsReducer from './slices/settingsSlice'
-import authReducer from './slices/authSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import createSagaMiddleware from "redux-saga";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage"; // localStorage as default
+import { rootReducer } from "./rootReducer";
+import rootSaga from "./rootSaga";
 
-// Load state from local storage
-const loadState = () => {
-  try {
-    const serializedState = localStorage.getItem('tasks');
-    return serializedState ? JSON.parse(serializedState) : undefined;
-  } catch (error) {
-    console.error('Error loading state from local storage:', error);
-    return undefined;
-  }
+const sagaMiddleware = createSagaMiddleware();
+
+const persistConfig = {
+  key: "root", // The key in localStorage where the state will be stored
+  storage,
+  whitelist: ["auth"],
 };
 
-// Save state to local storage
-const saveState = (state) => {
-  try {
-    const serializedState = JSON.stringify(state);
-    localStorage.setItem('tasks', serializedState);
-  } catch (error) {
-    console.error('Error saving state to local storage:', error);
-  }
-};
+// Create a persisted reducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-const rootReducer = combineReducers({
-  tasks: tasksReducer,
-  snackbar: snackbarReducer,
-  settings: settingsReducer,
-  auth: authReducer
-});
-
-const preloadedState = loadState();
-
+// Create the Redux store with the persisted reducer and saga middleware
 const store = configureStore({
-  reducer: rootReducer,
-  preloadedState,
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(sagaMiddleware),
 });
 
-// Subscribe to store changes and save to local storage
-store.subscribe(() => {
-  saveState(store.getState());
-});
+sagaMiddleware.run(rootSaga);
+
+export const persistor = persistStore(store);
 
 export default store;

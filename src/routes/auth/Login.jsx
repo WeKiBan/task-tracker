@@ -1,70 +1,179 @@
-import { auth, googleProvider } from '../../config/firebase';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { TextField, Button, Box, Typography, Alert } from "@mui/material";
+import GoogleIcon from "@mui/icons-material/Google";
+import { useDispatch, useSelector } from "react-redux";
+import { LOGIN_REQUEST, LOGIN_REQUEST_GOOGLE } from "../../redux/constants";
+import { authError, clearAuthError } from "../../redux/features/auth/authSlice";
+import { Link, useNavigate } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
 
-const LoginForm = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+const Login = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { authToken, emailVerified, error } = useSelector(
+    (state) => state.auth,
+  );
 
-  const handleUsernameChange = event => {
-    setUsername(event.target.value);
+  useEffect(() => {
+    if (authToken !== null) {
+      if (emailVerified) {
+        navigate("/tasks");
+      } else {
+        navigate("/verify");
+      }
+    } else {
+      setTimeout(() => setIsLoading(false), 700);
+    }
+  }, [authToken, emailVerified, navigate, error]);
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch, location.pathname]);
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
   };
 
-  const handlePasswordChange = event => {
+  const handlePasswordChange = (event) => {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = event => {
+  const handleSignIn = () => {
+    if (!email || !password) {
+      dispatch(authError("Email and password are required."));
+      return;
+    }
+    dispatch({ type: LOGIN_REQUEST, payload: { email, password, navigate } });
+    dispatch(authError(""));
+    setIsLoading(true);
+  };
+
+  const handleSignInWithGoogle = () => {
+    dispatch({ type: LOGIN_REQUEST_GOOGLE, payload: { navigate } });
+    setEmail("");
+    setPassword("");
+    dispatch(authError(""));
+    setIsLoading(true);
+  };
+
+  const handleSubmit = (event) => {
     event.preventDefault();
-    // Here you can add your logic for handling login
-    console.log('Username:', username);
-    console.log('Password:', password);
-    // Reset form fields
-    setUsername('');
-    setPassword('');
-  };
-
-  const handleSignIn = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, username, password);
-      navigate('/task-tracker/')
-      console.log('signed-in')
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSignInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-      navigate('/task-tracker/')
-      console.log('signed-in')
-    } catch (err) {
-      console.error(err);
-    }
+    handleSignIn();
+    setEmail("");
+    setPassword("");
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '300px', margin: '0 auto', marginTop: '100px' }} component='main' maxWidth='xs'>
-      <Typography component='h1' variant='h5'>
-        Login
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField variant='outlined' margin='normal' required fullWidth id='username' label='Username' name='username' autoComplete='username' value={username} onChange={handleUsernameChange} />
-        <TextField variant='outlined' margin='normal' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' value={password} onChange={handlePasswordChange} />
-        <Button onClick={handleSignIn} type='submit' fullWidth variant='contained' color='primary'>
-          Sign In
-        </Button>
-        <Button onClick={handleSignInWithGoogle} sx={{ marginTop: '10px' }} fullWidth variant='contained' color='primary'>
-          Sign in with Google <GoogleIcon sx={{ marginLeft: '5px' }} />
-        </Button>
-      </form>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100vh",
+        backgroundImage:
+          'url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?q=80&w=2940")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+      component="main"
+      maxWidth="xs"
+    >
+      <Box
+        sx={{
+          width: "500px",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          minHeight: "290px",
+        }}
+      >
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <CircularProgress color="primary" />
+          </Box>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email"
+              name="email"
+              autoComplete="email"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            {error && error && (
+              <Alert severity="error" sx={{ marginTop: "10px" }}>
+                {error}
+              </Alert>
+            )}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ marginTop: "20px" }}
+            >
+              Sign In
+            </Button>
+            <Button
+              onClick={handleSignInWithGoogle}
+              sx={{ marginTop: "10px" }}
+              fullWidth
+              variant="contained"
+              color="primary"
+            >
+              Sign in with Google <GoogleIcon sx={{ marginLeft: "5px" }} />
+            </Button>
+            <Box
+              sx={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <Typography variant="body1">Don’t have an account?</Typography>
+              <Link to="/register">
+                <Button variant="text" color="primary">
+                  Create one here
+                </Button>
+              </Link>
+            </Box>
+          </form>
+        )}
+      </Box>
     </Box>
   );
 };
 
-export default LoginForm;
+export default Login;

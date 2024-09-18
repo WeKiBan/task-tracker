@@ -1,7 +1,13 @@
-html, 
+html,
 body {
-    height: 100%;
-    box-sizing: border-box;
+  height: 100%;
+  box-sizing: border-box;
+  background: url("../assets/wavy-background.jpeg") no-repeat center center
+    fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 #root {
@@ -9,4 +15,3 @@ body {
   height: 100%;
   max-height: 100%;
 }
-

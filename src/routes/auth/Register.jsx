@@ -1,81 +1,191 @@
-import { auth, googleProvider, db } from '../../config/firebase';
-import { createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
+import GoogleIcon from "@mui/icons-material/Google";
+import { useDispatch } from "react-redux";
+import { REGISTER_REQUEST, LOGIN_REQUEST_GOOGLE } from "../../redux/constants";
+import { useSelector } from "react-redux";
+import { authError, clearAuthError } from "../../redux/features/auth/authSlice";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { error } = useSelector((state) => state.auth);
 
-  const handleUsernameChange = event => {
-    setUsername(event.target.value);
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => setIsLoading(false), 700);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch, location.pathname]);
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
   };
 
-  const handlePasswordChange = event => {
+  const handlePasswordChange = (event) => {
     setPassword(event.target.value);
   };
 
-  const handleSubmit = event => {
-    event.preventDefault();
-    // Reset form fields
-    setUsername('');
-    setPassword('');
+  const handleConfirmPasswordChange = (event) => {
+    setConfirmPassword(event.target.value);
   };
 
-  const handleCreateUserCollection = async userCredential => {
-    const { uid: userID, email } = userCredential.user;
+  const handleRegister = () => {
+    if (password !== confirmPassword) {
+      dispatch(authError("Passwords do not match"));
+      return;
+    }
 
-    await setDoc(doc(db, 'users', userID), {
-      userID: userID,
-      email,
+    dispatch({
+      type: REGISTER_REQUEST,
+      payload: { email, password, navigate },
     });
-
-    await setDoc(doc(db, `users/${userID}/tasks/`, 'tasks'), { activeTasks: [], inactiveTasks: [] });
+    dispatch(authError(""));
+    setIsLoading(true);
   };
 
-  const handleRegister = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, username, password);
-
-      await handleCreateUserCollection(userCredential);
-
-      navigate('/task-tracker/');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleRegisterWithGoogle = async () => {
-    try {
-      const userCredential = await signInWithPopup(auth, googleProvider);
-
-      await handleCreateUserCollection(userCredential);
-
-      navigate('/task-tracker/');
-    } catch (err) {
-      console.error(err);
-    }
+  const handleRegisterWithGoogle = () => {
+    dispatch({ type: LOGIN_REQUEST_GOOGLE, navigate });
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    dispatch(authError(""));
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '300px', margin: '0 auto', marginTop: '100px' }} component='main' maxWidth='xs'>
-      <Typography component='h1' variant='h5'>
-        Register
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField variant='outlined' margin='normal' required fullWidth id='username' label='Username' name='username' autoComplete='username' value={username} onChange={handleUsernameChange} />
-        <TextField variant='outlined' margin='normal' required fullWidth name='password' label='Password' type='password' id='password' autoComplete='current-password' value={password} onChange={handlePasswordChange} />
-        <Button onClick={handleRegister} type='submit' fullWidth variant='contained' color='primary'>
-          Register
-        </Button>
-        <Button onClick={handleRegisterWithGoogle} sx={{ marginTop: '10px' }} fullWidth variant='contained' color='primary'>
-          Register with Google <GoogleIcon sx={{ marginLeft: '5px' }} />
-        </Button>
-      </form>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+        height: "100vh",
+        backgroundImage:
+          'url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?q=80&w=2940")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+      component="main"
+      maxWidth="xs"
+    >
+      <Box
+        sx={{
+          width: "500px",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          minHeight: "300px",
+        }}
+      >
+        {isLoading ? (
+          <Box
+            sx={{
+              display: "flex",
+              height: "100%",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Email"
+              name="email"
+              autoComplete="email"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm Password"
+              type="password"
+              id="confirm-password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+            />
+            {error && (
+              <Alert severity="error" sx={{ marginTop: "10px" }}>
+                {error}
+              </Alert>
+            )}
+            <Button
+              onClick={handleRegister}
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ marginTop: "20px" }}
+            >
+              Register
+            </Button>
+            <Button
+              onClick={handleRegisterWithGoogle}
+              sx={{ marginTop: "10px" }}
+              fullWidth
+              variant="contained"
+              color="primary"
+            >
+              Register with Google <GoogleIcon sx={{ marginLeft: "5px" }} />
+            </Button>
+            <Box
+              sx={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              <Typography variant="body1">Already have an account?</Typography>
+              <Link to="/login">
+                <Button variant="text" color="primary">
+                  login here
+                </Button>
+              </Link>
+            </Box>
+          </>
+        )}
+      </Box>
     </Box>
   );
 };

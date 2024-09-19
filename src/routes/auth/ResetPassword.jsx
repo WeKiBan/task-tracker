@@ -1,28 +1,29 @@
-import { auth } from "../../config/firebase";
-import { sendPasswordResetEmail } from "firebase/auth";
 import { useState } from "react";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../config/firebase";
+import { TextField, Button, Box, Typography, Alert } from "@mui/material";
 
 const ResetPassword = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handleSubmit = (event) => {
+  const handleResetPassword = async (event) => {
     event.preventDefault();
-    // Reset form fields
-    setUsername("");
-  };
+    setIsSubmitting(true);
+    setError(null);
+    setMessage("");
 
-  const handleReset = async () => {
     try {
-      await sendPasswordResetEmail(auth, username);
-    } catch (err) {
-      const errorCode = err.code;
-      const errorMessage = err.message;
-      console.log("An error has occured: ", errorCode, errorMessage);
+      await sendPasswordResetEmail(auth, email);
+      setMessage(
+        "Password reset email sent! Check your inbox and follow the instructions.",
+      );
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -34,38 +35,55 @@ const ResetPassword = () => {
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        maxWidth: "300px",
-        margin: "0 auto",
-        marginTop: "100px",
+        height: "100vh",
       }}
-      component="main"
-      maxWidth="xs"
     >
-      <Typography component="h1" variant="h5">
-        Reset Password
-      </Typography>
-      <form style={{ width: "100%" }} onSubmit={handleSubmit}>
-        <TextField
-          variant="outlined"
-          margin="normal"
-          required
-          fullWidth
-          id="username"
-          label="Username"
-          name="username"
-          autoComplete="username"
-          value={username}
-          onChange={handleUsernameChange}
-        />
-        <Button
-          onClick={handleReset}
-          fullWidth
-          variant="contained"
-          color="primary"
-        >
-          Reset
-        </Button>
-      </form>
+      <Box
+        sx={{
+          width: "500px",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          minHeight: "200px",
+        }}
+      >
+        <Typography variant="h5" component="h1" gutterBottom>
+          Reset Password
+        </Typography>
+        <form onSubmit={handleResetPassword}>
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ marginTop: "20px" }}
+            disabled={isSubmitting}
+            size="large"
+          >
+            {isSubmitting ? "Sending..." : "Reset Password"}
+          </Button>
+        </form>
+        {message && (
+          <Alert sx={{ marginTop: "20px" }} severity="success">
+            {message}
+          </Alert>
+        )}
+        {error && (
+          <Alert sx={{ marginTop: "20px" }} severity="error">
+            {error}
+          </Alert>
+        )}
+      </Box>
     </Box>
   );
 };

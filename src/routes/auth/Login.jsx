@@ -22,7 +22,7 @@ const Login = () => {
       if (emailVerified) {
         navigate("/tasks");
       } else {
-        navigate("/verify");
+        navigate("/verify-email");
       }
     } else {
       setTimeout(() => setIsLoading(false), 700);
@@ -104,7 +104,14 @@ const Login = () => {
             <CircularProgress color="primary" />
           </Box>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column",
+            }}
+            onSubmit={handleSubmit}
+          >
             <TextField
               variant="outlined"
               margin="normal"
@@ -130,6 +137,11 @@ const Login = () => {
               value={password}
               onChange={handlePasswordChange}
             />
+            <Link style={{ margin: "0 auto" }} to="/reset-password">
+              <Button variant="text" color="primary">
+                Forgot Password?
+              </Button>
+            </Link>
             {error && error && (
               <Alert severity="error" sx={{ marginTop: "10px" }}>
                 {error}

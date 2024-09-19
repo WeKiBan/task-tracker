@@ -73,7 +73,7 @@ function* createUser(action) {
       }),
     );
 
-    navigate("/verify");
+    navigate("/verify-email");
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }

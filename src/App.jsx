@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import AuthListener from "./components/AuthListener/AuthListener";
 import Tasks from "./routes/Tasks";
 import Verify from "./routes/auth/Verify";
+import Action from "./routes/auth/Action";
 import { PersistGate } from "redux-persist/integration/react";
 
 const App = () => {
@@ -27,8 +28,9 @@ const App = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/reset" element={<ResetPassword />} />
-              <Route path="/verify" element={<Verify />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-email" element={<Verify />} />
+              <Route path="/user-actions" element={<Action />} />
               <Route
                 path="/tasks"
                 element={

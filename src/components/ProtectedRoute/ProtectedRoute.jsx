@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }) => {
   if (user && emailVerified) {
     return children;
   } else if (user && !emailVerified) {
-    return <Navigate to="/verify" />;
+    return <Navigate to="/verify-email" />;
   } else {
     return <Navigate to="/login" />;
   }

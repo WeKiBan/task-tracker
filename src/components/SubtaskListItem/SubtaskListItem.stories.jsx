@@ -17,8 +17,7 @@ const Template = (args) => (
 
 export const SubtaskListItemComponent = Template.bind({});
 SubtaskListItemComponent.args = {
-  color: "blocked",
-  title: "MATCHCNT-1914",
-  onClickDelete: fn(() => console.log("delete")),
-  onClickLink: fn(() => console.log("go to link")),
+  subtask: { id: 1, title: "Subtask 1", status: "blocked", link: "#" },
+  onDeleteTask: fn((id) => console.log(`delete task ${id}`)),
+  onSelectTask: fn((id) => console.log(`select task ${id}`)),
 };

@@ -15,9 +15,10 @@ export default function Layout({ children }) {
         maxHeight: "100%",
       }}
     >
-      {location.pathname === "/tasks" && authToken && emailVerified && (
-        <NavBar />
-      )}
+      {location.pathname === "/active-tasks" ||
+        (location.pathname === "/inactive-tasks" &&
+          authToken &&
+          emailVerified && <NavBar />)}
       {location.pathname === "/" && <NavBar />}
       {children}
     </Box>

@@ -22,7 +22,7 @@ function* signInUser(action) {
   const { email, password, navigate } = action.payload;
   try {
     yield signInWithEmailAndPassword(auth, email, password);
-    navigate("/tasks");
+    navigate("/active-tasks");
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }
@@ -36,7 +36,7 @@ function* signInUserGoogle(action) {
   try {
     const { navigate } = action.payload;
     yield signInWithPopup(auth, googleProvider);
-    navigate("/tasks");
+    navigate("/active-tasks");
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }

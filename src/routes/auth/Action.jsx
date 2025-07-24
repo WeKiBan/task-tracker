@@ -92,7 +92,7 @@ const Action = () => {
               setAlertMessage(
                 "Email verification successful. You can now log in.",
               );
-              setTimeout(() => navigate("/tasks"), 1000);
+              setTimeout(() => navigate("/active-tasks"), 1000);
             })
             .catch((error) => {
               setIsLoading(false);
@@ -122,7 +122,7 @@ const Action = () => {
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        height: "100vh",
+        height: "100%",
       }}
     >
       <Box

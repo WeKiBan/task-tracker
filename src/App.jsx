@@ -11,7 +11,7 @@ import Login from "./routes/auth/Login";
 import LandingPage from "./routes/Landing";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import AuthListener from "./components/AuthListener/AuthListener";
-import Tasks from "./routes/Tasks";
+import ActiveTasks from "./routes/ActiveTasks/ActiveTasks";
 import Verify from "./routes/auth/Verify";
 import Action from "./routes/auth/Action";
 import { PersistGate } from "redux-persist/integration/react";
@@ -35,7 +35,7 @@ const App = () => {
                 path="/tasks"
                 element={
                   <ProtectedRoute>
-                    <Tasks />
+                    <ActiveTasks />
                   </ProtectedRoute>
                 }
               />

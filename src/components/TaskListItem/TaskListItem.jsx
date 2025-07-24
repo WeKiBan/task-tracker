@@ -9,16 +9,19 @@ import {
 import { KeyboardArrowUp, KeyboardArrowDown } from "@mui/icons-material";
 
 const TaskListItem = ({
-  title,
-  description,
-  status,
-  onSelectTask,
-  isSelected,
+  task,
+  selectedTaskId,
   onClickArrowUp,
   onClickArrowDown,
+  onSelectTask,
 }) => {
+  const { title, description, status, id } = task;
   return (
-    <Wrapper onClick={onSelectTask} status={status} isSelected={isSelected}>
+    <Wrapper
+      onClick={() => onSelectTask(task)}
+      status={status}
+      isSelected={id === selectedTaskId}
+    >
       <TextWrapper>
         <Title>{title}</Title>
         <Description>{description}</Description>
@@ -27,7 +30,7 @@ const TaskListItem = ({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onClickArrowUp();
+            onClickArrowUp(id);
           }}
         >
           <KeyboardArrowUp sx={{ height: "24px", width: "24px" }} />
@@ -35,7 +38,7 @@ const TaskListItem = ({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onClickArrowDown();
+            onClickArrowDown(id);
           }}
         >
           <KeyboardArrowDown sx={{ height: "24px", width: "24px" }} />

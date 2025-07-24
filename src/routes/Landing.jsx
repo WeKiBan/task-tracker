@@ -1,7 +1,7 @@
 import { Button, Box, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import placeholder from "../assets/placeholder.png";
-import { useEffect, useState } from "react";
+import { useEffect  } from "react";
 import { useSelector } from "react-redux";
 
 const Landing = () => {
@@ -9,7 +9,7 @@ const Landing = () => {
   const { authToken, emailVerified } = useSelector((state) => state.auth);
   useEffect(() => {
     if (authToken && emailVerified) {
-      navigate("/tasks");
+      navigate("/active-tasks");
     }
   }, [authToken, emailVerified, navigate]);
 
@@ -21,7 +21,7 @@ const Landing = () => {
         justifyContent: "space-evenly",
         alignItems: "center",
         width: "100%",
-        height: "100vh",
+        height: "100%",
         padding: "0 100px",
         gap: "50px",
       }}

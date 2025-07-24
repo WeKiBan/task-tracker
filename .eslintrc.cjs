@@ -6,12 +6,15 @@ module.exports = {
   parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh', 'prettier'],
-  rules: {
-    'react/prop-types': 'off',
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true },
-    ],
-    'prettier/prettier': 'error',
-  },
+   rules: {
+      'prettier/prettier': ['error', { singleQuote: true, semi: false }],
+    },
 };
+
+import { FlatCompat } from '@eslint/eslintrc'
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+})
+
+export default eslintConfig

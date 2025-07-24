@@ -7,15 +7,15 @@ import {
 } from "./SubtaskListItem.styles";
 import { Delete, Link } from "@mui/icons-material";
 
-const SubtaskListItem = ({
-  title,
-  color,
-  onSelectTask,
-  onClickDelete,
-  onClickLink,
-}) => {
+const SubtaskListItem = ({ subtask, onClickDelete, onSelectTask }) => {
+  const { status, id, title, link } = subtask;
+  const onClickLink = () => {
+    if (link) {
+      window.open(link, "_blank", "noopener,noreferrer");
+    }
+  };
   return (
-    <Wrapper onClick={onSelectTask} color={color}>
+    <Wrapper onClick={() => onSelectTask(id)} status={status}>
       <TextWrapper>
         <Title>{title}</Title>
       </TextWrapper>
@@ -31,7 +31,7 @@ const SubtaskListItem = ({
         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onClickDelete();
+            onClickDelete(id);
           }}
         >
           <Delete sx={{ height: "16px", width: "16px" }} />

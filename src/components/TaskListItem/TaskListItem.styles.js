@@ -21,7 +21,7 @@ export const Wrapper = styled(Box, {
   },
 }));
 
-export const TextWrapper = styled(Box)(({ theme }) => ({
+export const TextWrapper = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -33,6 +33,7 @@ export const Title = styled(Typography)(({ theme }) => ({
   color: theme.palette.textColors.darkGrey,
   fontSize: "1.6rem",
   lineHeight: "2.4rem",
+  fontWeight: "600",
 }));
 
 export const Description = styled(Typography)(({ theme }) => ({
@@ -44,7 +45,7 @@ export const Description = styled(Typography)(({ theme }) => ({
   textOverflow: "ellipsis",
 }));
 
-export const ButtonWrapper = styled(Box)(({ theme }) => ({
+export const ButtonWrapper = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
@@ -52,6 +53,6 @@ export const ButtonWrapper = styled(Box)(({ theme }) => ({
   gap: "1rem",
 }));
 
-export const Button = styled(IconButton)(({ theme }) => ({
+export const Button = styled(IconButton)(() => ({
   padding: 0,
 }));

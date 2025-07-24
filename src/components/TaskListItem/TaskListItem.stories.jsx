@@ -9,18 +9,51 @@ export default {
   },
 };
 
-const Template = (args) => (
-  <div style={{ width: "300px" }}>
+export const TaskListItemSelected = (args) => (
+  <div style={{ width: "400px" }}>
     <TaskListItem {...args} />
   </div>
 );
 
-export const TaskListItemComponent = Template.bind({});
-TaskListItemComponent.args = {
-  status: "inProd",
-  title: "MATCHCNT-1914",
-  description: "Nations League 24-25 problemi Foglie match",
-  isSelected: false,
+TaskListItemSelected.args = {
+  task: {
+    id: 1,
+    title: "GAZZAMOTOR-1667",
+    status: "inProgress",
+    link: "#",
+    description:
+      "This task involves updating the motor section with the latest articles and reviews.",
+    notes:
+      "Waiting for the final approval from the content team. Ensure to follow the motor guidelines.",
+    emailNotes:
+      "Sent an update to the client regarding the changes. Awaiting feedback.",
+  },
+  selectedTaskId: 2,
+  onClickArrowUp: fn(() => console.log("arrow-up")),
+  onClickArrowDown: fn(() => console.log("arrow-down")),
+  onSelectTask: fn(() => console.log("select-task")),
+};
+
+export const TaskListItemNotSelected = (args) => (
+  <div style={{ width: "400px" }}>
+    <TaskListItem {...args} />
+  </div>
+);
+
+TaskListItemNotSelected.args = {
+  task: {
+    id: 1,
+    title: "GAZZAMOTOR-1667",
+    status: "inProgress",
+    link: "#",
+    description:
+      "This task involves updating the motor section with the latest articles and reviews.",
+    notes:
+      "Waiting for the final approval from the content team. Ensure to follow the motor guidelines.",
+    emailNotes:
+      "Sent an update to the client regarding the changes. Awaiting feedback.",
+  },
+  selectedTaskId: 1,
   onClickArrowUp: fn(() => console.log("arrow-up")),
   onClickArrowDown: fn(() => console.log("arrow-down")),
   onSelectTask: fn(() => console.log("select-task")),

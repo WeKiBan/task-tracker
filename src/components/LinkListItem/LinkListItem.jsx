@@ -8,7 +8,7 @@ import {
 import { Delete, Link } from "@mui/icons-material";
 
 const LinkListItem = ({ linkData, onClickDelete }) => {
-  const { id, label, link } = linkData;
+  const { id, title, link } = linkData;
   const onClickLink = () => {
     if (link) {
       window.open(link, "_blank", "noopener,noreferrer");
@@ -22,7 +22,7 @@ const LinkListItem = ({ linkData, onClickDelete }) => {
       }}
     >
       <TextWrapper>
-        <Title>{label}</Title>
+        <Title>{title}</Title>
       </TextWrapper>
       <ButtonWrapper>
         <Button

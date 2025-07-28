@@ -1,2 +1,2 @@
-export const UPDATE_TASK_REQUEST = "tasks/updateTaskRequest";
-
+export const UPDATE_TASK_REQUEST = "UPDATE_TASK_REQUEST";
+export const UPDATE_MULTIPLE_TASKS_REQUEST = "UPDATE_MULTIPLE_TASKS_REQUEST"

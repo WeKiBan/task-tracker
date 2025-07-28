@@ -2,12 +2,14 @@ import { styled } from "@mui/material/styles";
 import { Typography, Box, IconButton } from "@mui/material";
 
 export const Wrapper = styled(Box, {
-  shouldForwardProp: (prop) => prop !== "color",
-})(({ theme, color }) => ({
+  shouldForwardProp: (prop) => prop !== "type",
+})(({ theme, type }) => ({
   display: "flex",
   flexDirection: "row",
   cursor: "pointer",
-  background: theme.palette.projectTypeColors[color],
+  background:
+    theme.palette.projectTypeColors[type.toLowerCase()] ||
+    theme.palette.projectTypeColors.default,
   borderRadius: "0.4rem",
   padding: "0.8rem 1.6rem",
   gap: "0.8rem",

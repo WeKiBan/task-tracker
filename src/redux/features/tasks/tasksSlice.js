@@ -18,6 +18,15 @@ const taskSlice = createSlice({
         task.id === updatedTask.id ? updatedTask : task,
       );
     },
+    updateMultipleTasksSuccess: (state, action) => {
+      const updated = action.payload;
+      for (let updatedTask of updated) {
+        const index = state.tasks.findIndex((t) => t.id === updatedTask.id);
+        if (index !== -1) {
+          state.tasks[index] = updatedTask;
+        }
+      }
+    },
     taskError: (state, action) => {
       state.error = action.payload;
     },
@@ -30,6 +39,7 @@ export const {
   addSubtaskSuccess,
   addProjectSuccess,
   taskError,
+  updateMultipleTasksSuccess,
 } = taskSlice.actions;
 
 export default taskSlice.reducer;

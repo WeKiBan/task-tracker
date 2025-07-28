@@ -6,6 +6,9 @@ export const useTaskForm = (task) => {
   const [description, setDescription] = useState(task ? task.description : "");
   const [notes, setNotes] = useState(task ? task.notes : "");
   const [emailNote, setEmailNote] = useState(task ? task.emailNote : "");
+  const [addSubtaskModalOpen, setAddSubtaskModalOpen] = useState(false);
+  const [addLinkModalOpen, setAddLinkModalOpen] = useState(false);
+  const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -37,16 +40,28 @@ export const useTaskForm = (task) => {
   const handleEmailNoteChange = (e) => {
     setEmailNote(e.target.value);
   };
-  const onAddSubtask = () => {
-    console.log("Add subtask clicked");
+  const openSubtaskModal = () => {
+    setAddSubtaskModalOpen(true);
   };
 
-  const onAddProject = (id) => {
-    console.log("Add project clicked");
+  const closeSubtaskModal = () => {
+    setAddSubtaskModalOpen(false);
   };
 
-  const onAddLink = () => {
-    console.log("Add link clicked");
+  const openLinkModal = () => {
+    setAddLinkModalOpen(true);
+  };
+
+  const closeLinkModal = () => {
+    setAddLinkModalOpen(false);
+  };
+
+  const openProjectModal = () => {
+    setAddProjectModalOpen(true);
+  };
+
+  const closeProjectModal = () => {
+    setAddProjectModalOpen(false);
   };
 
   const onDeleteLink = (id) => {
@@ -76,25 +91,55 @@ export const useTaskForm = (task) => {
     console.log(`Delete link with id: ${id}`);
   };
 
+  const handleAddNewSubtask = (title, link) => {
+    const id = crypto.randomUUID();
+    const newSubtask = { id, title, link };
+    const updatedTask = {
+      ...task,
+      subtasks: [...task.subtasks, newSubtask],
+    };
+    dispatch(updateTaskRequest(updatedTask));
+    console.log(`New subtask added with Id: ${id}`);
+  };
+
+  const handleAddNewLink = (title, link) => {
+    const id = crypto.randomUUID();
+    const newLink = { id, title, link };
+    const updatedTask = {
+      ...task,
+      links: [...task.links, newLink],
+    };
+    dispatch(updateTaskRequest(updatedTask));
+    console.log(`New subtask added with Id: ${id}`);
+  };
+
   useEffect(() => {
     setDescription(task?.description || "");
     setNotes(task?.notes || "");
     setEmailNote(task?.emailNote || "");
-  }, [task?.id]); // Only when the selected task changes
+  }, [task?.id]);
 
   return {
     description,
     notes,
     emailNote,
+    addSubtaskModalOpen,
+    addLinkModalOpen,
+    addProjectModalOpen,
     handleBlur,
     handleDescriptionChange,
     handleNotesChange,
     handleEmailNoteChange,
-    onAddSubtask,
-    onAddLink,
-    onAddProject,
     onDeleteLink,
     onDeleteProject,
     onDeleteSubtask,
+    openSubtaskModal,
+    closeSubtaskModal,
+    handleAddNewSubtask,
+    openLinkModal,
+    closeLinkModal,
+    handleAddNewLink,
+    openProjectModal,
+    closeProjectModal,
   };
 };

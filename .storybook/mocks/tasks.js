@@ -5,6 +5,7 @@ import { mockProjects } from "./projects";
 export const mockTasks = [
   {
     id: 1,
+    order: 1,
     title: "GAZZAMOTOR-1667",
     status: "inProgress",
     link: "#",
@@ -20,6 +21,7 @@ export const mockTasks = [
   },
   {
     id: 2,
+    order: 2,
     title: "GAZZETTA-9225",
     status: "closed",
     link: "#",
@@ -32,6 +34,7 @@ export const mockTasks = [
   },
   {
     id: 3,
+    order: 3,
     title: "GAZZETTA-8414",
     status: "blocked",
     link: "#",
@@ -45,6 +48,7 @@ export const mockTasks = [
   },
   {
     id: 4,
+    order: 4,
     title: "GAZZAMOTOR-1667",
     status: "inProgress",
     link: "#",
@@ -58,6 +62,7 @@ export const mockTasks = [
   },
   {
     id: 5,
+    order: 5,
     title: "GAZZETTA-9225",
     status: "closed",
     link: "#",
@@ -71,6 +76,7 @@ export const mockTasks = [
   },
   {
     id: 6,
+    order: 6,
     title: "GAZZETTA-8414",
     status: "blocked",
     link: "#",

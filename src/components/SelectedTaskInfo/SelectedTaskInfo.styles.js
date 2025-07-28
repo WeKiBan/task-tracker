@@ -25,11 +25,11 @@ export const Container = styled(Box)(
   }),
 );
 
-export const Column = styled(Box)(({ theme, flexAmount }) => ({
+export const Column = styled(Box)(({ theme, flexamount }) => ({
   display: "flex",
   flexDirection: "column",
   gap: theme.spacing(2),
-  flex: flexAmount || 1,
+  flex: flexamount || 1,
   background: theme.palette.backgroundColors.lightGrey,
   borderRadius: theme.shape.borderRadius,
 }));

@@ -20,6 +20,7 @@ const theme = createTheme({
       css: "#1976d2",
       multi: "#C95D63",
       config: "#AE8799",
+      default: "#4B505D",
     },
     backgroundColors: {
       darkGrey: "#A7A7A71A",

@@ -2,39 +2,18 @@ import { Box } from "@mui/material";
 import TaskListContainer from "../../components/TaskListContainer/TaskListContainer";
 import TaskListItem from "../../components/TaskListItem/TaskListItem";
 import SelectedTaskInfo from "../../components/SelectedTaskInfo/SelectedTaskInfo";
-import { useSelector } from "react-redux";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useActiveTasks } from "./useActiveTasks";
 
 const ActiveTasks = () => {
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const selectedTask = useSelector((state) =>
-    state.tasks.tasks.find((t) => t.id === selectedTaskId),
-  );
-  const tasks = useSelector((state) => state.tasks.tasks);
-
-  const onSelectTask = (task) => {
-    console.log(`Selected task: ${task.id}`);
-    setSelectedTaskId(task.id);
-  };
-
-  const onClickArrowUp = () => {
-    console.log("Arrow up clicked");
-  };
-
-  const onClickArrowDown = () => {
-    console.log("Arrow down clicked");
-  };
-
-  const onClickAdd = () => {
-    console.log("Add task clicked");
-  };
-
-  useEffect(() => {
-    if (tasks.length > 0 && !selectedTaskId) {
-      setSelectedTaskId(tasks[0].id);
-    }
-  }, [tasks, selectedTaskId]);
+  const {
+    tasks,
+    selectedTaskId,
+    selectedTask,
+    onSelectTask,
+    onClickArrowUp,
+    onClickArrowDown,
+    onClickAdd,
+  } = useActiveTasks();
 
   return (
     <Box

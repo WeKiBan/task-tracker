@@ -7,9 +7,14 @@ import {
 } from "./ProjectListItem.styles";
 import { Delete, Link } from "@mui/icons-material";
 
-const ProjectListItem = ({ title, color, onClickDelete, onClickLink, project }) => {
+const ProjectListItem = ({ title, type, onClickDelete, project }) => {
+  const onClickLink = () => {
+    if (project.link) {
+      window.open(project.link, "_blank");
+    }
+  };
   return (
-    <Wrapper onClick={onClickLink} color={color}>
+    <Wrapper onClick={onClickLink} type={type}>
       <TextWrapper>
         <Title>{title}</Title>
       </TextWrapper>

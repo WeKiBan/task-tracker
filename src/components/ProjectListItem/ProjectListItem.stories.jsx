@@ -17,7 +17,7 @@ const Template = (args) => (
 
 export const ProjectListItemComponent = Template.bind({});
 ProjectListItemComponent.args = {
-  color: "js",
+  type: "js",
   title: "rcs_mc_widget",
   onClickDelete: fn(() => console.log("delete")),
   onClickLink: fn(() => console.log("go to link")),

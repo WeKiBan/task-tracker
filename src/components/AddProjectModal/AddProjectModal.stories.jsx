@@ -1,12 +1,11 @@
+import AddProjectModal from "./AddProjectModal";
 import { Provider } from "react-redux";
-import ActiveTasks from "./ActiveTasks";
-import { mockTasks } from "../../../.storybook/mocks/tasks";
 import { mockProjects } from "../../../.storybook/mocks/projects";
 import { createMockStore } from "../../redux/mockStore";
 
 export default {
-  title: "Active Tasks",
-  component: ActiveTasks,
+  title: "Modals/AddProjectModal",
+  component: AddProjectModal,
   parameters: {
     layout: "centered",
   },
@@ -14,9 +13,6 @@ export default {
 
 const Template = (args) => {
   const store = createMockStore({
-    tasks: {
-      tasks: mockTasks,
-    },
     projects: {
       projects: mockProjects,
     },
@@ -24,12 +20,14 @@ const Template = (args) => {
 
   return (
     <Provider store={store}>
-      <ActiveTasks {...args} />
+      <AddProjectModal {...args} />
     </Provider>
   );
 };
 
-export const ActiveTasksComponent = Template.bind({});
-ActiveTasksComponent.args = {
-  isStorybook: true,
+export const Default = Template.bind({});
+
+Default.args = {
+  isOpen: true,
+  onClose: () => console.log("close"),
 };

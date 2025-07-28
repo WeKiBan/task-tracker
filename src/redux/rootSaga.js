@@ -5,7 +5,10 @@ import {
   watchSignInUserGoogle,
   watchCreateUser,
 } from "./features/auth/authSaga";
-import { watchUpdateTask } from "./features/tasks/tasksSaga";
+import {
+  watchUpdateTask,
+  watchUpdateMultipleTasksSaga,
+} from "./features/tasks/tasksSaga";
 
 export default function* rootSaga() {
   yield all([
@@ -13,5 +16,6 @@ export default function* rootSaga() {
     watchSignInUserGoogle(),
     watchCreateUser(),
     watchUpdateTask(),
+    watchUpdateMultipleTasksSaga(),
   ]);
 }

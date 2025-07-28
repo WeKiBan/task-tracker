@@ -1,19 +1,19 @@
 export const mockLinks = [
   {
     id: 1,
-    label: "facebook",
-    link: "www.facebook.com",
+    title: "facebook",
+    title: "www.facebook.com",
     color: "js",
   },
   {
     id: 2,
-    label: "google",
+    title: "google",
     link: "www.google.com",
     color: "html",
   },
   {
     id: 3,
-    label: "google",
+    title: "google",
     link: "www.google.com",
     color: "css",
   },

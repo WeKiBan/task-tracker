@@ -57,8 +57,10 @@ export const useActiveTasks = () => {
   };
 
   useEffect(() => {
-    if (tasks.length > 0 && !selectedTaskId) {
-      setSelectedTaskId(tasks[0].id);
+    const taskStillExists = tasks.some((t) => t.id === selectedTaskId);
+
+    if (!taskStillExists) {
+      setSelectedTaskId(tasks[0].id || null);
     }
   }, [tasks, selectedTaskId]);
 

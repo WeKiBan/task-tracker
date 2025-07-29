@@ -10,7 +10,7 @@ import TextInput from '../TextInput/TextInput';
 import { Column, Container, Wrapper } from './SelectedTaskInfo.styles';
 import { useTaskForm } from './useTaskForm';
 
-function SelectedTaskInfo({ task }) {
+function SelectedTaskInfo({ task, resetSelectedTask }) {
   const {
     description,
     notes,
@@ -36,7 +36,7 @@ function SelectedTaskInfo({ task }) {
   return (
     <>
       <Wrapper sx={{ height: '100%', minHeight: 0 }}>
-        <SelectedTaskHeader task={task} />
+        <SelectedTaskHeader task={task} resetSelectedTask={resetSelectedTask} />
         <Container padding="10px" flexDirection="row" justifyContent="space-between">
           <Column flexamount={7}>
             <TextInput

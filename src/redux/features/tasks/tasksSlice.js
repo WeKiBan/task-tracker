@@ -28,6 +28,10 @@ const taskSlice = createSlice({
         }
       });
     },
+    deleteTaskSuccess: (state, action) => {
+      const deletedTaskId = action.payload;
+      state.tasks = state.tasks.filter((task) => deletedTaskId !== task.id);
+    },
     taskError: (state, action) => {
       state.error = action.payload;
     },
@@ -40,6 +44,7 @@ export const {
   updateTaskSuccess,
   updateMultipleTasksSuccess,
   addSubtaskSuccess,
+  deleteTaskSuccess,
   taskError,
 } = taskSlice.actions;
 

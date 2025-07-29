@@ -1,10 +1,10 @@
-// src/redux/rootSaga.js
 import { all } from 'redux-saga/effects';
 
 import { watchCreateUser, watchSignInUser, watchSignInUserGoogle } from './features/auth/authSaga';
 import { watchUpdateProjects } from './features/projects/projectsSaga';
 import {
   watchAddTask,
+  watchDeleteTask,
   watchUpdateMultipleTasksSaga,
   watchUpdateTask,
 } from './features/tasks/tasksSaga';
@@ -17,6 +17,7 @@ export default function* rootSaga() {
     watchUpdateTask(),
     watchUpdateMultipleTasksSaga(),
     watchAddTask(),
+    watchDeleteTask(),
     watchUpdateProjects(),
   ]);
 }

@@ -2,11 +2,13 @@ import { call, put, takeLatest } from 'redux-saga/effects';
 
 import {
   ADD_TASK_REQUEST,
+  DELETE_TASK_REQUEST,
   UPDATE_MULTIPLE_TASKS_REQUEST,
   UPDATE_TASK_REQUEST,
 } from './taskActionTypes';
 import {
   addTaskSuccess,
+  deleteTaskSuccess,
   taskError,
   updateMultipleTasksSuccess,
   updateTaskSuccess,
@@ -78,4 +80,29 @@ function* addTaskSaga(action) {
 
 export function* watchAddTask() {
   yield takeLatest(ADD_TASK_REQUEST, addTaskSaga);
+}
+
+function deleteTaskInFirebase(updatedTask) {
+  console.log(updatedTask);
+  // Replace with real Firebase call later
+  return Promise.resolve(); // fake async
+}
+
+function* deleteTaskSaga(action) {
+  const deletedTaskId = action.payload;
+
+  try {
+    // Call Firebase (async)
+    yield call(deleteTaskInFirebase, deletedTaskId);
+    // Then update Redux
+    yield put(deleteTaskSuccess(deletedTaskId));
+    console.log(`Task deleted: ${deletedTaskId}`);
+  } catch (error) {
+    console.log(error);
+    yield put(taskError('Failed to add task'));
+  }
+}
+
+export function* watchDeleteTask() {
+  yield takeLatest(DELETE_TASK_REQUEST, deleteTaskSaga);
 }

@@ -1,8 +1,8 @@
 import { useDispatch } from 'react-redux';
 
-import { updateTaskRequest } from '../redux/features/tasks/tasksActions';
+import { deleteTaskRequest, updateTaskRequest } from '../redux/features/tasks/tasksActions';
 
-export const useUpdateTask = (task) => {
+export const useUpdateTask = (task, setConfirmDeleteModalIsOpen) => {
   const dispatch = useDispatch();
 
   const handleUpdateStatus = (status) => {
@@ -10,5 +10,10 @@ export const useUpdateTask = (task) => {
     dispatch(updateTaskRequest(updatedTask));
   };
 
-  return { handleUpdateStatus };
+  const handleDeleteTask = () => {
+    setConfirmDeleteModalIsOpen(false);
+    dispatch(deleteTaskRequest(task.id));
+  };
+
+  return { handleUpdateStatus, handleDeleteTask };
 };

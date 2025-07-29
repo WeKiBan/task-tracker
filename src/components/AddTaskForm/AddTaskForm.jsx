@@ -2,7 +2,9 @@ import { FormControl, TextField } from '@mui/material';
 
 function AddTaskForm({ link, setLink, title, setTitle }) {
   return (
-    <FormControl sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <FormControl
+      sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2, paddingTop: '10px' }}
+    >
       <TextField
         fullWidth
         required

@@ -1,32 +1,46 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { addTaskRequest } from '../../redux/features/tasks/tasksActions';
+import { addTaskRequest, updateTaskRequest } from '../../redux/features/tasks/tasksActions';
 
-export const useAddTaskModal = (onClose, onSelectTask) => {
+export const useAddTaskModal = (onClose, onSelectTask, task) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
 
-  const handleAddNewTask = () => {
-    const id = crypto.randomUUID();
-    const newTask = {
-      id,
-      order: 5,
-      title,
-      status: 'notStarted',
-      link,
-      description: '',
-      notes: '',
-      emailNotes: '',
-      subtasks: [],
-      links: [],
-      projects: [],
-    };
+  useEffect(() => {
+    setTitle(task?.title || '');
+    setLink(task?.link || '');
+  }, [task]);
 
-    dispatch(addTaskRequest(newTask));
-    onSelectTask(newTask);
-    console.log(`New task added with Id: ${id}`);
+  const handleAddNewTask = () => {
+    if (task) {
+      const updatedTask = {
+        ...task,
+        title,
+        link,
+      };
+      dispatch(updateTaskRequest(updatedTask));
+      console.log(`Task edited with Id: ${updatedTask.id}`);
+    } else {
+      const id = crypto.randomUUID();
+      const newTask = {
+        id,
+        order: 5,
+        title,
+        status: 'notStarted',
+        link,
+        description: '',
+        notes: '',
+        emailNotes: '',
+        subtasks: [],
+        links: [],
+        projects: [],
+      };
+      dispatch(addTaskRequest(newTask));
+      onSelectTask(newTask);
+      console.log(`New task added with Id: ${id}`);
+    }
   };
 
   const resetInputs = () => {
@@ -38,11 +52,13 @@ export const useAddTaskModal = (onClose, onSelectTask) => {
 
   const handleClose = () => {
     onClose();
-    resetInputs();
+    if (!task) {
+      resetInputs();
+    }
   };
 
   const handleConfirm = () => {
-    handleAddNewTask(title, link);
+    handleAddNewTask();
     handleClose();
   };
 

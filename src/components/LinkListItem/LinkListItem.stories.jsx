@@ -1,20 +1,23 @@
-import { fn } from "@storybook/test";
-import LinkListItem from "./LinkListItem";
-import { mockLinks } from "../../../.storybook/mocks/links";
+import { fn } from '@storybook/test';
+
+import { mockLinks } from '../../../.storybook/mocks/links';
+import LinkListItem from './LinkListItem';
 
 export default {
-  title: "Link List Item",
+  title: 'Link List Item',
   component: LinkListItem,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => (
-  <div style={{ width: "300px" }}>
-    <LinkListItem {...args} />
-  </div>
-);
+function Template(args) {
+  return (
+    <div style={{ width: '300px' }}>
+      <LinkListItem {...args} />
+    </div>
+  );
+}
 
 export const LinkListItemComponent = Template.bind({});
 LinkListItemComponent.args = {

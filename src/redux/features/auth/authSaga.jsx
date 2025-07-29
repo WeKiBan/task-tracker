@@ -1,28 +1,23 @@
 // src/redux/sagas/authSaga.js
-import { takeLatest, put, call } from "redux-saga/effects";
-import { getFirebaseErrorMessage } from "../../../utils/getFirebaseErrorMessage";
-
 import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  signInWithEmailAndPassword,
+  signInWithPopup,
   updateProfile,
-} from "firebase/auth";
-import { authError, loginUserSuccess } from "../auth/authSlice";
-import {
-  LOGIN_REQUEST,
-  LOGIN_REQUEST_GOOGLE,
-  REGISTER_REQUEST,
-} from "../../constants";
+} from 'firebase/auth';
+import { call, put, takeLatest } from 'redux-saga/effects';
 
-import { auth, googleProvider } from "../../../config/firebase";
+import { auth, googleProvider } from '../../../config/firebase';
+import { getFirebaseErrorMessage } from '../../../utils/getFirebaseErrorMessage';
+import { LOGIN_REQUEST, LOGIN_REQUEST_GOOGLE, REGISTER_REQUEST } from '../../constants';
+import { authError, loginUserSuccess } from './authSlice';
 
 function* signInUser(action) {
   const { email, password, navigate } = action.payload;
   try {
     yield signInWithEmailAndPassword(auth, email, password);
-    navigate("/active-tasks");
+    navigate('/active-tasks');
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }
@@ -36,7 +31,7 @@ function* signInUserGoogle(action) {
   try {
     const { navigate } = action.payload;
     yield signInWithPopup(auth, googleProvider);
-    navigate("/active-tasks");
+    navigate('/active-tasks');
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }
@@ -50,20 +45,15 @@ function* createUser(action) {
   const { email, password, navigate } = action.payload;
   try {
     // Register the user
-    const userCredential = yield call(
-      createUserWithEmailAndPassword,
-      auth,
-      email,
-      password,
-    );
+    const userCredential = yield call(createUserWithEmailAndPassword, auth, email, password);
 
-    const user = userCredential.user;
+    const { user } = userCredential;
 
     // Send verification email
     yield call(sendEmailVerification, user);
 
     // Optionally: Set a flag in the user's profile to indicate that a verification email was sent
-    yield call(updateProfile, user, { displayName: "Pending Verification" });
+    yield call(updateProfile, user, { displayName: 'Pending Verification' });
 
     yield put(
       loginUserSuccess({
@@ -73,7 +63,7 @@ function* createUser(action) {
       }),
     );
 
-    navigate("/verify-email");
+    navigate('/verify-email');
   } catch (error) {
     yield put(authError(getFirebaseErrorMessage(error.code)));
   }

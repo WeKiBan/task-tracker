@@ -1,27 +1,18 @@
-import {
-  Wrapper,
-  Description,
-  Title,
-  ButtonWrapper,
-  TextWrapper,
-  Button,
-} from "./TaskListItem.styles";
-import { KeyboardArrowUp, KeyboardArrowDown } from "@mui/icons-material";
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 
-const TaskListItem = ({
-  task,
-  selectedTaskId,
-  onClickArrowUp,
-  onClickArrowDown,
-  onSelectTask,
-}) => {
+import {
+  Button,
+  ButtonWrapper,
+  Description,
+  TextWrapper,
+  Title,
+  Wrapper,
+} from './TaskListItem.styles';
+
+function TaskListItem({ task, selectedTaskId, onClickArrowUp, onClickArrowDown, onSelectTask }) {
   const { title, description, status, id } = task;
   return (
-    <Wrapper
-      onClick={() => onSelectTask(task)}
-      status={status}
-      isSelected={id === selectedTaskId}
-    >
+    <Wrapper onClick={() => onSelectTask(task)} status={status} isSelected={id === selectedTaskId}>
       <TextWrapper>
         <Title>{title}</Title>
         <Description>{description}</Description>
@@ -33,7 +24,7 @@ const TaskListItem = ({
             onClickArrowUp(id);
           }}
         >
-          <KeyboardArrowUp sx={{ height: "24px", width: "24px" }} />
+          <KeyboardArrowUp sx={{ height: '24px', width: '24px' }} />
         </Button>
         <Button
           onClick={(e) => {
@@ -41,11 +32,11 @@ const TaskListItem = ({
             onClickArrowDown(id);
           }}
         >
-          <KeyboardArrowDown sx={{ height: "24px", width: "24px" }} />
+          <KeyboardArrowDown sx={{ height: '24px', width: '24px' }} />
         </Button>
       </ButtonWrapper>
     </Wrapper>
   );
-};
+}
 
 export default TaskListItem;

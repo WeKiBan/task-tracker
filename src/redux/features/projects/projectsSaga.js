@@ -1,14 +1,17 @@
-import { updateProjects, projectsError } from "./projectsSlice";
-import { put, call, takeLatest } from "redux-saga/effects";
-import { UPDATE_PROJECTS_REQUEST } from "./projectsActionTypes";
+import { call, put, takeLatest } from 'redux-saga/effects';
 
-function updateProjectsInFirebase(updatedTask) {
+import { UPDATE_PROJECTS_REQUEST } from './projectsActionTypes';
+import { projectsError, updateProjects } from './projectsSlice';
+
+function updateProjectsInFirebase(updatedProjects) {
+  console.log('wes:', updatedProjects);
   // Replace with real Firebase call later
   return Promise.resolve(); // fake async
 }
 
 function* updateProjectsSaga(action) {
   const updatedProjects = action.payload;
+  console.log(`Updating projects:`, updatedProjects);
 
   try {
     // Call Firebase (async)
@@ -18,7 +21,7 @@ function* updateProjectsSaga(action) {
     console.log(`Projects updated:`, updatedProjects);
   } catch (error) {
     console.log(error);
-    yield put(projectsError("Failed to update projects"));
+    yield put(projectsError('Failed to update projects'));
   }
 }
 

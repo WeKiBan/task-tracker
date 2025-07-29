@@ -1,8 +1,8 @@
-import { styled } from "@mui/material/styles";
-import { Select as SelectComponent } from "@mui/material";
+import { Select as SelectComponent } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 export const Select = styled(SelectComponent)(({ theme }) => ({
-  width: "100%",
+  width: '100%',
   color: theme.palette.textColors.darkGrey,
-  fontSize: "1.4rem",
+  fontSize: '1.4rem',
 }));

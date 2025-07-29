@@ -1,16 +1,17 @@
-import { configureStore } from "@reduxjs/toolkit";
-import createSagaMiddleware from "redux-saga";
-import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // localStorage as default
-import { rootReducer } from "./rootReducer";
-import rootSaga from "./rootSaga";
+import { configureStore } from '@reduxjs/toolkit';
+import { persistReducer, persistStore } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // localStorage as default
+import createSagaMiddleware from 'redux-saga';
+
+import { rootReducer } from './rootReducer';
+import rootSaga from './rootSaga';
 
 const sagaMiddleware = createSagaMiddleware();
 
 const persistConfig = {
-  key: "root", // The key in localStorage where the state will be stored
+  key: 'root', // The key in localStorage where the state will be stored
   storage,
-  whitelist: ["auth"],
+  whitelist: ['auth'],
 };
 
 // Create a persisted reducer

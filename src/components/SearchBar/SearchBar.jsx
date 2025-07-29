@@ -1,13 +1,9 @@
-import {
-  Search,
-  SearchIconWrapper,
-  StyledInputBase,
-  SearchIcon,
-} from "./SearchBar.styles";
-import { useState } from "react";
+import { useState } from 'react';
+
+import { Search, SearchIcon, SearchIconWrapper, StyledInputBase } from './SearchBar.styles';
 
 function SearchBar({ placeholder, onSearch, fontSize, iconSize }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const handleChangeSearch = (e) => {
     setSearch(e.target.value);
     onSearch(e.target.value);
@@ -19,7 +15,7 @@ function SearchBar({ placeholder, onSearch, fontSize, iconSize }) {
       </SearchIconWrapper>
       <StyledInputBase
         placeholder={placeholder}
-        inputProps={{ "aria-label": placeholder }}
+        inputProps={{ 'aria-label': placeholder }}
         value={search}
         onChange={handleChangeSearch}
         fontSize={fontSize}

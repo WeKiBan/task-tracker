@@ -1,18 +1,20 @@
-import AddLinkForm from "./AddLinkForm";
+import AddLinkForm from './AddLinkForm';
 
 export default {
-  title: "Forms/AddLinkForm",
+  title: 'Forms/AddLinkForm',
   component: AddLinkForm,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => <AddLinkForm {...args} />;
+function Template({ onSubmit }) {
+  return <AddLinkForm onSubmit={onSubmit} />;
+}
 
 export const Default = Template.bind({});
 Default.args = {
   onSubmit: (link) => {
-    console.log("Link submitted:", link);
+    console.log('Link submitted:', link);
   },
 };

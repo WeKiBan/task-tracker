@@ -1,18 +1,20 @@
-import Nav from "./Nav";
+import Nav from './Nav';
 
 export default {
-  title: "Nav Bar",
+  title: 'Nav Bar',
   component: Nav,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-export const NavComponent = (args) => (
-  <div style={{ width: "1200px" }}>
-    <Nav {...args} />
-  </div>
-);
+export function NavComponent(args) {
+  return (
+    <div style={{ width: '1200px' }}>
+      <Nav {...args} />
+    </div>
+  );
+}
 
 NavComponent.args = {
   isStorybook: true,

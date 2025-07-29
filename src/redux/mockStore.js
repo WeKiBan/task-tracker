@@ -1,10 +1,8 @@
-import { configureStore } from "@reduxjs/toolkit";
-import createSagaMiddleware from "redux-saga";
-import tasksReducer from "./features/tasks/tasksSlice";
-import projectsReducer from "./features/projects/projectsSlice";
-import { rootReducer } from "./rootReducer";
+import { configureStore } from '@reduxjs/toolkit';
+import createSagaMiddleware from 'redux-saga';
 
-import rootSaga from "./rootSaga";
+import { rootReducer } from './rootReducer';
+import rootSaga from './rootSaga';
 
 export const createMockStore = (preloadedState = {}) => {
   const sagaMiddleware = createSagaMiddleware();

@@ -1,17 +1,12 @@
-import {
-  Wrapper,
-  Title,
-  ButtonWrapper,
-  TextWrapper,
-  Button,
-} from "./SubtaskListItem.styles";
-import { Delete, Link } from "@mui/icons-material";
+import { Delete, Link as LinkIcon } from '@mui/icons-material';
 
-const SubtaskListItem = ({ subtask, onClickDelete, onSelectTask }) => {
+import { Button, ButtonWrapper, TextWrapper, Title, Wrapper } from './SubtaskListItem.styles';
+
+function SubtaskListItem({ subtask, onClickDelete, onSelectTask }) {
   const { status, id, title, link } = subtask;
   const onClickLink = () => {
     if (link) {
-      window.open(link, "_blank", "noopener,noreferrer");
+      window.open(link, '_blank', 'noopener,noreferrer');
     }
   };
   return (
@@ -26,7 +21,7 @@ const SubtaskListItem = ({ subtask, onClickDelete, onSelectTask }) => {
             onClickLink();
           }}
         >
-          <Link sx={{ height: "16px", width: "16px" }} />
+          <LinkIcon sx={{ height: '16px', width: '16px' }} />
         </Button>
         <Button
           onClick={(e) => {
@@ -34,11 +29,11 @@ const SubtaskListItem = ({ subtask, onClickDelete, onSelectTask }) => {
             onClickDelete(id);
           }}
         >
-          <Delete sx={{ height: "16px", width: "16px" }} />
+          <Delete sx={{ height: '16px', width: '16px' }} />
         </Button>
       </ButtonWrapper>
     </Wrapper>
   );
-};
+}
 
 export default SubtaskListItem;

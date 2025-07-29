@@ -1,18 +1,19 @@
-import { Provider } from "react-redux";
-import ActiveTasks from "./ActiveTasks";
-import { mockTasks } from "../../../.storybook/mocks/tasks";
-import { mockProjects } from "../../../.storybook/mocks/projects";
-import { createMockStore } from "../../redux/mockStore";
+import { Provider } from 'react-redux';
+
+import { mockProjects } from '../../../.storybook/mocks/projects';
+import { mockTasks } from '../../../.storybook/mocks/tasks';
+import { createMockStore } from '../../redux/mockStore';
+import ActiveTasks from './ActiveTasks';
 
 export default {
-  title: "Active Tasks",
+  title: 'Active Tasks',
   component: ActiveTasks,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => {
+function Template(args) {
   const store = createMockStore({
     tasks: {
       tasks: mockTasks,
@@ -27,7 +28,7 @@ const Template = (args) => {
       <ActiveTasks {...args} />
     </Provider>
   );
-};
+}
 
 export const ActiveTasksComponent = Template.bind({});
 ActiveTasksComponent.args = {

@@ -1,29 +1,24 @@
-import { useState } from "react";
-import Modal from "../Modal/Modal";
-import AddSubtaskForm from "../AddSubTaskForm/AddSubtaskForm";
+import AddSubtaskForm from '../AddSubTaskForm/AddSubtaskForm';
+import Modal from '../Modal/Modal';
+import { useAddSubtaskModal } from './useAddSubtaskModal';
 
-const AddSubtaskModal = ({ isOpen, onClose, handleAddNewSubtask }) => {
-  const [subtaskData, setSubtaskData] = useState({
-    title: "",
-    link: "",
-  });
-
-  const handleConfirm = () => {
-    handleAddNewSubtask(subtaskData.title, subtaskData.link);
-    onClose();
-  };
+function AddSubtaskModal({ isOpen, task, onClose }) {
+  const { title, link, setTitle, setLink, handleConfirm, handleClose } = useAddSubtaskModal(
+    task,
+    onClose,
+  );
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onConfirm={handleConfirm}
       title="Add Subtask"
       showActions
     >
-      <AddSubtaskForm onChange={setSubtaskData} subtaskData={subtaskData} />
+      <AddSubtaskForm setTitle={setTitle} title={title} setLink={setLink} link={link} />
     </Modal>
   );
-};
+}
 
 export default AddSubtaskModal;

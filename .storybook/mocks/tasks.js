@@ -74,19 +74,4 @@ export const mockTasks = [
     links: [...mockLinks],
     projects: [...mockProjects],
   },
-  {
-    id: 6,
-    order: 6,
-    title: "GAZZETTA-8414",
-    status: "blocked",
-    link: "#",
-    description:
-      "API integration stalled due to rate-limiting issues from Instagram.",
-    notes:
-      "Monitoring the API rate limits and exploring alternative solutions.",
-    emailNotes: "Notified the project manager about the potential delays.",
-    subtasks: [...mockSubtasks],
-    links: [...mockLinks],
-    projects: [...mockProjects],
-  },
 ];

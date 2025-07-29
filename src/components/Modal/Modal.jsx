@@ -1,21 +1,15 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-const Modal = ({
+function Modal({
   isOpen,
   onClose,
   title,
   children,
   onConfirm,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
   showActions = false,
-}) => {
+}) {
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
       {title && <DialogTitle>{title}</DialogTitle>}
@@ -33,6 +27,6 @@ const Modal = ({
       )}
     </Dialog>
   );
-};
+}
 
 export default Modal;

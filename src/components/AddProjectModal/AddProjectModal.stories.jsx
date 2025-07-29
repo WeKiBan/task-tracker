@@ -1,17 +1,18 @@
-import AddProjectModal from "./AddProjectModal";
-import { Provider } from "react-redux";
-import { mockProjects } from "../../../.storybook/mocks/projects";
-import { createMockStore } from "../../redux/mockStore";
+import { Provider } from 'react-redux';
+
+import { mockProjects } from '../../../.storybook/mocks/projects';
+import { createMockStore } from '../../redux/mockStore';
+import AddProjectModal from './AddProjectModal';
 
 export default {
-  title: "Modals/AddProjectModal",
+  title: 'Modals/AddProjectModal',
   component: AddProjectModal,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => {
+function Template(args) {
   const store = createMockStore({
     projects: {
       projects: mockProjects,
@@ -23,11 +24,11 @@ const Template = (args) => {
       <AddProjectModal {...args} />
     </Provider>
   );
-};
+}
 
 export const Default = Template.bind({});
 
 Default.args = {
   isOpen: true,
-  onClose: () => console.log("close"),
+  onClose: () => console.log('close'),
 };

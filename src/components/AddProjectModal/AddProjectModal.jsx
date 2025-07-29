@@ -1,10 +1,8 @@
-import { useState } from "react";
-import Modal from "../Modal/Modal";
-import AddProjectForm from "../AddProjectForm/AddProjectForm";
+import AddProjectForm from '../AddProjectForm/AddProjectForm';
+import Modal from '../Modal/Modal';
+import { useAddProjectModal } from './useAddProjectModal';
 
-import { useAddProjectModal } from "./useAddProjectModal";
-
-const AddProjectModal = ({ isOpen, onClose, task }) => {
+function AddProjectModal({ isOpen, onClose, task }) {
   const {
     projects,
     autoCompleteValue,
@@ -14,21 +12,17 @@ const AddProjectModal = ({ isOpen, onClose, task }) => {
     linkValue,
     handleInputChange,
     handleProjectChange,
-    handleAddNewProject,
     handleSetNewProjectType,
     handleSetIsAddingNewProject,
     handleSetLinkValue,
-  } = useAddProjectModal(task);
-
-  const handleConfirm = () => {
-    handleAddNewProject();
-    onClose();
-  };
+    handleClose,
+    handleConfirm,
+  } = useAddProjectModal(task, onClose);
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onConfirm={handleConfirm}
       title="Add Project"
       showActions
@@ -48,6 +42,6 @@ const AddProjectModal = ({ isOpen, onClose, task }) => {
       />
     </Modal>
   );
-};
+}
 
 export default AddProjectModal;

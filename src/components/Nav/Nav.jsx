@@ -1,21 +1,22 @@
-import { AppBar, IconButton, Button } from "@mui/material";
-import { auth } from "../../config/firebase";
-import { signOut } from "firebase/auth";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { AppBar, Button, IconButton } from '@mui/material';
+import { signOut } from 'firebase/auth';
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { auth } from '../../config/firebase';
 import {
-  Toolbar,
+  IconButtonContainer,
   LogoText,
   LogoutIcon,
-  SettingsIcon,
   MailIcon,
-  IconButtonContainer,
-  TextButtonContainer,
+  SettingsIcon,
   TextButton,
-} from "./Nav.styles";
+  TextButtonContainer,
+  Toolbar,
+} from './Nav.styles';
 
-const Nav = ({ isStorybook = false }) => {
-  let navigate = useNavigate();
+function Nav({ isStorybook = false }) {
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.authToken);
   const { pathname } = useLocation();
 
@@ -26,16 +27,16 @@ const Nav = ({ isStorybook = false }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      console.log("signed out");
+      console.log('signed out');
     } catch (err) {
       const errorCode = err.code;
       const errorMessage = err.message;
-      console.log("An error has occured: ", errorCode, errorMessage);
+      console.log('An error has occured: ', errorCode, errorMessage);
     }
   };
 
   const handleMail = () => {
-    console.log("wes:", "mail");
+    console.log('wes:', 'mail');
   };
 
   return (
@@ -49,16 +50,16 @@ const Nav = ({ isStorybook = false }) => {
                 <TextButton
                   fullWidth
                   variant="secondary"
-                  onClick={() => handleOptionClick("/active-tasks")}
-                  isActive={isStorybook || pathname === "/active-tasks"}
+                  onClick={() => handleOptionClick('/active-tasks')}
+                  isActive={isStorybook || pathname === '/active-tasks'}
                 >
                   Active Tasks
                 </TextButton>
                 <TextButton
                   fullWidth
                   variant="secondary"
-                  onClick={() => handleOptionClick("/inactive-tasks")}
-                  isActive={pathname === "/inactive-tasks"}
+                  onClick={() => handleOptionClick('/inactive-tasks')}
+                  isActive={pathname === '/inactive-tasks'}
                 >
                   Inactive Tasks
                 </TextButton>
@@ -68,7 +69,7 @@ const Nav = ({ isStorybook = false }) => {
         <IconButtonContainer>
           {!!user || isStorybook ? (
             <>
-              <IconButton onClick={() => handleOptionClick("/settings")}>
+              <IconButton onClick={() => handleOptionClick('/settings')}>
                 <SettingsIcon />
               </IconButton>
               <IconButton onClick={handleMail}>
@@ -84,7 +85,7 @@ const Nav = ({ isStorybook = false }) => {
                 fullWidth
                 color="success"
                 variant="secondary"
-                onClick={() => handleOptionClick("/login")}
+                onClick={() => handleOptionClick('/login')}
               >
                 Sign In
               </Button>
@@ -92,7 +93,7 @@ const Nav = ({ isStorybook = false }) => {
                 fullWidth
                 color="success"
                 variant="secondary"
-                onClick={() => handleOptionClick("/register")}
+                onClick={() => handleOptionClick('/register')}
               >
                 Register
               </Button>
@@ -102,6 +103,6 @@ const Nav = ({ isStorybook = false }) => {
       </Toolbar>
     </AppBar>
   );
-};
+}
 
 export default Nav;

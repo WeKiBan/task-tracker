@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
-import {
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
-import { useDispatch } from "react-redux";
-import { REGISTER_REQUEST, LOGIN_REQUEST_GOOGLE } from "../../redux/constants";
-import { useSelector } from "react-redux";
-import { authError, clearAuthError } from "../../redux/features/auth/authSlice";
-import { Link, useNavigate } from "react-router-dom";
+import GoogleIcon from '@mui/icons-material/Google';
+import { Alert, Box, Button, CircularProgress, TextField, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Register = () => {
+import { LOGIN_REQUEST_GOOGLE, REGISTER_REQUEST } from '../../redux/constants';
+import { authError, clearAuthError } from '../../redux/features/auth/authSlice';
+
+function Register() {
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { error } = useSelector((state) => state.auth);
@@ -31,7 +24,7 @@ const Register = () => {
 
   useEffect(() => {
     dispatch(clearAuthError());
-  }, [dispatch, location.pathname]);
+  }, [dispatch]);
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -47,7 +40,7 @@ const Register = () => {
 
   const handleRegister = () => {
     if (password !== confirmPassword) {
-      dispatch(authError("Passwords do not match"));
+      dispatch(authError('Passwords do not match'));
       return;
     }
 
@@ -55,51 +48,51 @@ const Register = () => {
       type: REGISTER_REQUEST,
       payload: { email, password, navigate },
     });
-    dispatch(authError(""));
+    dispatch(authError(''));
     setIsLoading(true);
   };
 
   const handleRegisterWithGoogle = () => {
     dispatch({ type: LOGIN_REQUEST_GOOGLE, navigate });
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    dispatch(authError(""));
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    dispatch(authError(''));
   };
 
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
         backgroundImage:
           'url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?q=80&w=2940")',
-        backgroundSize: "cover",
-        backgroundPosition: "center",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
       }}
       component="main"
       maxWidth="xs"
     >
       <Box
         sx={{
-          width: "500px",
-          background: "white",
-          padding: "20px",
-          borderRadius: "8px",
-          minHeight: "300px",
+          width: '500px',
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          minHeight: '300px',
         }}
       >
         {isLoading ? (
           <Box
             sx={{
-              display: "flex",
-              height: "100%",
-              justifyContent: "center",
-              alignItems: "center",
+              display: 'flex',
+              height: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <CircularProgress />
@@ -144,7 +137,7 @@ const Register = () => {
               onChange={handleConfirmPasswordChange}
             />
             {error && (
-              <Alert severity="error" sx={{ marginTop: "10px" }}>
+              <Alert severity="error" sx={{ marginTop: '10px' }}>
                 {error}
               </Alert>
             )}
@@ -154,26 +147,26 @@ const Register = () => {
               fullWidth
               variant="contained"
               color="primary"
-              sx={{ marginTop: "20px" }}
+              sx={{ marginTop: '20px' }}
             >
               Register
             </Button>
             <Button
               onClick={handleRegisterWithGoogle}
-              sx={{ marginTop: "10px" }}
+              sx={{ marginTop: '10px' }}
               fullWidth
               variant="contained"
               color="primary"
             >
-              Register with Google <GoogleIcon sx={{ marginLeft: "5px" }} />
+              Register with Google <GoogleIcon sx={{ marginLeft: '5px' }} />
             </Button>
             <Box
               sx={{
-                marginTop: "20px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
+                marginTop: '20px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
               }}
             >
               <Typography variant="body1">Already have an account?</Typography>
@@ -188,6 +181,6 @@ const Register = () => {
       </Box>
     </Box>
   );
-};
+}
 
 export default Register;

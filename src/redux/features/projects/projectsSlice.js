@@ -1,5 +1,5 @@
 // redux/features/projects/projectsSlice.js
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   projects: [],
@@ -7,17 +7,17 @@ const initialState = {
 };
 
 const projectsSlice = createSlice({
-  name: "projects",
+  name: 'projects',
   initialState,
   reducers: {
     updateProjects: (state, action) => {
       state.projects = action.payload;
     },
-    projectError: (state, action) => {
+    projectsError: (state, action) => {
       state.error = action.payload;
     },
   },
 });
 
-export const { setProjects, projectError } = projectsSlice.actions;
+export const { projectsError, updateProjects } = projectsSlice.actions;
 export default projectsSlice.reducer;

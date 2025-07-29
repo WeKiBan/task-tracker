@@ -1,19 +1,21 @@
-import SelectedTaskHeader from "./SelectedTaskHeader";
-import { mockTasks } from "../../../.storybook/mocks/tasks";
+import { mockTasks } from '../../../.storybook/mocks/tasks';
+import SelectedTaskHeader from './SelectedTaskHeader';
 
 export default {
-  title: "Selected Task Header",
+  title: 'Selected Task Header',
   component: SelectedTaskHeader,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-export const SelectedTaskHeaderComponent = (args) => (
-  <div style={{ width: "800px" }}>
-    <SelectedTaskHeader {...args} />
-  </div>
-);
+export function SelectedTaskHeaderComponent(args) {
+  return (
+    <div style={{ width: '800px' }}>
+      <SelectedTaskHeader {...args} />
+    </div>
+  );
+}
 
 SelectedTaskHeaderComponent.args = {
   task: mockTasks[0],

@@ -1,29 +1,24 @@
-import { useState } from "react";
-import Modal from "../Modal/Modal";
-import AddLinkForm from "../AddLinkForm/AddLinkForm";
+import AddLinkForm from '../AddLinkForm/AddLinkForm';
+import Modal from '../Modal/Modal';
+import { useAddLinkModal } from './useAddLinkModal';
 
-const AddLinkModal = ({ isOpen, onClose, handleAddNewLink }) => {
-  const [linkData, setLinkData] = useState({
-    title: "",
-    link: "",
-  });
-
-  const handleConfirm = () => {
-    handleAddNewLink(linkData.title, linkData.link);
-    onClose();
-  };
+function AddLinkModal({ isOpen, onClose, task }) {
+  const { link, title, setLink, setTitle, handleConfirm, handleClose } = useAddLinkModal(
+    task,
+    onClose,
+  );
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onConfirm={handleConfirm}
       title="Add Link"
       showActions
     >
-      <AddLinkForm onChange={setLinkData} linkData={linkData} />
+      <AddLinkForm link={link} setLink={setLink} title={title} setTitle={setTitle} />
     </Modal>
   );
-};
+}
 
 export default AddLinkModal;

@@ -23,16 +23,4 @@ export const mockSubtasks = [
     status: "inProgress",
     link: "#",
   },
-  {
-    id: 5,
-    title: "GAZZETTA-9225",
-    status: "closed",
-    link: "#",
-  },
-  {
-    id: 6,
-    title: "GAZZETTA-8414",
-    status: "blocked",
-    link: "#",
-  },
 ];

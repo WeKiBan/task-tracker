@@ -1,6 +1,6 @@
-import { TextField, FormControl, Autocomplete, MenuItem } from "@mui/material";
+import { Autocomplete, FormControl, MenuItem, TextField } from '@mui/material';
 
-const AddProjectForm = ({
+function AddProjectForm({
   onProjectChange,
   onInputChange,
   selectedProject,
@@ -12,7 +12,7 @@ const AddProjectForm = ({
   handleSetNewProjectType,
   handleSetIsAddingNewProject,
   handleSetLinkValue,
-}) => {
+}) {
   const extendedOptions = [
     ...projects,
     ...(inputValue && !projects.find((p) => p.label === inputValue)
@@ -21,15 +21,11 @@ const AddProjectForm = ({
   ];
 
   return (
-    <FormControl
-      sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}
-    >
+    <FormControl sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Autocomplete
         freeSolo
         options={extendedOptions}
-        getOptionLabel={(option) =>
-          typeof option === "string" ? option : option.label
-        }
+        getOptionLabel={(option) => (typeof option === 'string' ? option : option.label)}
         value={selectedProject}
         inputValue={inputValue}
         onChange={(event, newValue) => {
@@ -44,9 +40,7 @@ const AddProjectForm = ({
         onInputChange={(event, newInputValue) => {
           onInputChange(newInputValue);
         }}
-        renderInput={(params) => (
-          <TextField {...params} label="Select or Add Project" />
-        )}
+        renderInput={(params) => <TextField {...params} label="Select or Add Project" />}
       />
 
       {isAddingNewProject && (
@@ -74,6 +68,6 @@ const AddProjectForm = ({
       )}
     </FormControl>
   );
-};
+}
 
 export default AddProjectForm;

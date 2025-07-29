@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../../config/firebase";
-import { TextField, Button, Box, Typography, Alert } from "@mui/material";
+import { Alert, Box, Button, TextField, Typography } from '@mui/material';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { useState } from 'react';
 
-const ResetPassword = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+import { auth } from '../../config/firebase';
+
+function ResetPassword() {
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -13,15 +14,13 @@ const ResetPassword = () => {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    setMessage("");
+    setMessage('');
 
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage(
-        "Password reset email sent! Check your inbox and follow the instructions.",
-      );
-    } catch (error) {
-      setError(error.message);
+      setMessage('Password reset email sent! Check your inbox and follow the instructions.');
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -30,21 +29,21 @@ const ResetPassword = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        width: "100%",
-        height: "100%",
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100%',
       }}
     >
       <Box
         sx={{
-          width: "500px",
-          background: "white",
-          padding: "20px",
-          borderRadius: "8px",
-          minHeight: "200px",
+          width: '500px',
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          minHeight: '200px',
         }}
       >
         <Typography variant="h5" component="h1" gutterBottom>
@@ -66,26 +65,26 @@ const ResetPassword = () => {
             fullWidth
             variant="contained"
             color="primary"
-            sx={{ marginTop: "20px" }}
+            sx={{ marginTop: '20px' }}
             disabled={isSubmitting}
             size="large"
           >
-            {isSubmitting ? "Sending..." : "Reset Password"}
+            {isSubmitting ? 'Sending...' : 'Reset Password'}
           </Button>
         </form>
         {message && (
-          <Alert sx={{ marginTop: "20px" }} severity="success">
+          <Alert sx={{ marginTop: '20px' }} severity="success">
             {message}
           </Alert>
         )}
         {error && (
-          <Alert sx={{ marginTop: "20px" }} severity="error">
+          <Alert sx={{ marginTop: '20px' }} severity="error">
             {error}
           </Alert>
         )}
       </Box>
     </Box>
   );
-};
+}
 
 export default ResetPassword;

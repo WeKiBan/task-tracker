@@ -1,16 +1,17 @@
-import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { updateTaskRequest } from "../../redux/features/tasks/tasksActions";
-import { updateProjectsRequest } from "../../redux/features/projects/projectsActions";
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-export const useAddProjectModal = (task) => {
+import { updateProjectsRequest } from '../../redux/features/projects/projectsActions';
+import { updateTaskRequest } from '../../redux/features/tasks/tasksActions';
+
+export const useAddProjectModal = (task, onClose) => {
   const dispatch = useDispatch();
   const [selectedProject, setSelectedProject] = useState(null);
   const projects = useSelector((state) => [...state.projects.projects]);
-  const [autoCompleteValue, setAutoCompleteValue] = useState("");
+  const [autoCompleteValue, setAutoCompleteValue] = useState('');
   const [isAddingNewProject, setIsAddingNewProject] = useState(false);
-  const [newProjectType, setNewProjectType] = useState("");
-  const [linkValue, setLinkValue] = useState("");
+  const [newProjectType, setNewProjectType] = useState('');
+  const [linkValue, setLinkValue] = useState('');
 
   const handleProjectChange = (newValue) => {
     setSelectedProject(newValue);
@@ -40,9 +41,8 @@ export const useAddProjectModal = (task) => {
         projects: [...task.projects, selectedProject],
       };
       dispatch(updateTaskRequest(updatedTask));
+      console.log(`New project added with Id: ${selectedProject.id}`);
     }
-
-    console.log(`New project added with Id: ${selectedProject.id}`);
   };
 
   const handleDeleteProject = (id) => {
@@ -66,6 +66,29 @@ export const useAddProjectModal = (task) => {
     setLinkValue(link);
   };
 
+  const handleReset = () => {
+    // timeout to ensure state is reset after modal close
+    // this is a workaround to avoid state being reset immediately on close
+    setTimeout(() => {
+      setSelectedProject(null);
+      setAutoCompleteValue('');
+      setNewProjectType('');
+      setIsAddingNewProject(false);
+      setLinkValue('');
+    }, 100);
+  };
+
+  const handleConfirm = () => {
+    handleAddNewProject();
+    onClose();
+    handleReset();
+  };
+
+  const handleClose = () => {
+    onClose();
+    handleReset();
+  };
+
   return {
     projects,
     autoCompleteValue,
@@ -75,10 +98,11 @@ export const useAddProjectModal = (task) => {
     linkValue,
     handleProjectChange,
     handleInputChange,
-    handleAddNewProject,
     handleDeleteProject,
     handleSetNewProjectType,
     handleSetIsAddingNewProject,
     handleSetLinkValue,
+    handleClose,
+    handleConfirm,
   };
 };

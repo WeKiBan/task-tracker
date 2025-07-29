@@ -1,22 +1,24 @@
-import SearchBar from "./SearchBar";
+import SearchBar from './SearchBar';
 
 export default {
-  title: "SearchBar",
+  title: 'SearchBar',
   component: SearchBar,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-export const SearchBarComponent = (args) => (
-  <div style={{ width: "344px" }}>
-    <SearchBar {...args} />
-  </div>
-);
+export function SearchBarComponent(args) {
+  return (
+    <div style={{ width: '344px' }}>
+      <SearchBar {...args} />
+    </div>
+  );
+}
 
 SearchBarComponent.args = {
-  placeholder: "Search Tasks...",
+  placeholder: 'Search Tasks...',
   onSearch: (searchText) => console.log(`Searching ${searchText}`),
-  fontSize: "2rem",
-  iconSize: "2.4rem",
+  fontSize: '2rem',
+  iconSize: '2.4rem',
 };

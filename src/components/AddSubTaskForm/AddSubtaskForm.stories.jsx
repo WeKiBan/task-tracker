@@ -1,27 +1,22 @@
-import AddSubtaskForm from "./AddSubtaskForm";
-import { useState } from "react";
+import { useState } from 'react';
+
+import AddSubtaskForm from './AddSubtaskForm';
 
 export default {
-  title: "Forms/AddSubtaskForm",
+  title: 'Forms/AddSubtaskForm',
   component: AddSubtaskForm,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => {
+function Template(args) {
   const [subtaskData, setSubtaskData] = useState({
-    title: "",
-    link: "",
+    title: '',
+    link: '',
   });
 
-  return (
-    <AddSubtaskForm
-      {...args}
-      onChange={setSubtaskData}
-      subtaskData={subtaskData}
-    />
-  );
-};
+  return <AddSubtaskForm {...args} onChange={setSubtaskData} subtaskData={subtaskData} />;
+}
 
 export const Default = Template.bind({});

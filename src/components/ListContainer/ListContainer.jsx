@@ -1,13 +1,14 @@
+import { Children } from 'react';
+
+import EmptyListItem from '../EmptyListItem/EmptyListItem';
 import {
-  Wrapper,
+  AddIcon,
+  IconButton,
   ItemContainer,
   Label,
   LabelWrapper,
-  AddIcon,
-  IconButton,
-} from "./ListContainer.styles";
-import EmptyListItem from "../EmptyListItem/EmptyListItem";
-import { Children } from "react";
+  Wrapper,
+} from './ListContainer.styles';
 
 function ListContainer({ children, label, onClickAdd }) {
   return (

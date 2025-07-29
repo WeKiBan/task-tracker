@@ -1,16 +1,11 @@
-import {
-  Wrapper,
-  Title,
-  ButtonWrapper,
-  TextWrapper,
-  Button,
-} from "./ProjectListItem.styles";
-import { Delete, Link } from "@mui/icons-material";
+import { Delete, Link as LinkIcon } from '@mui/icons-material';
 
-const ProjectListItem = ({ title, type, onClickDelete, project }) => {
+import { Button, ButtonWrapper, TextWrapper, Title, Wrapper } from './ProjectListItem.styles';
+
+function ProjectListItem({ title, type, onClickDelete, project }) {
   const onClickLink = () => {
     if (project.link) {
-      window.open(project.link, "_blank");
+      window.open(project.link, '_blank');
     }
   };
   return (
@@ -25,7 +20,7 @@ const ProjectListItem = ({ title, type, onClickDelete, project }) => {
             onClickLink();
           }}
         >
-          <Link sx={{ height: "16px", width: "16px" }} />
+          <LinkIcon sx={{ height: '16px', width: '16px' }} />
         </Button>
         <Button
           onClick={(e) => {
@@ -33,11 +28,11 @@ const ProjectListItem = ({ title, type, onClickDelete, project }) => {
             onClickDelete(project.id);
           }}
         >
-          <Delete sx={{ height: "16px", width: "16px" }} />
+          <Delete sx={{ height: '16px', width: '16px' }} />
         </Button>
       </ButtonWrapper>
     </Wrapper>
   );
-};
+}
 
 export default ProjectListItem;

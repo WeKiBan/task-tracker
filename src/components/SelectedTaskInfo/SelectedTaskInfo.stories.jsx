@@ -1,15 +1,17 @@
-import SelectedTaskInfo from "./SelectedTaskInfo";
-import { mockTasks } from "../../../.storybook/mocks/tasks";
+import { mockTasks } from '../../../.storybook/mocks/tasks';
+import SelectedTaskInfo from './SelectedTaskInfo';
 
 export default {
-  title: "Selected Task Info",
+  title: 'Selected Task Info',
   component: SelectedTaskInfo,
   parameters: {
-    layout: "fullscreen",
+    layout: 'fullscreen',
   },
 };
 
-const Template = (args) => <SelectedTaskInfo {...args} />;
+function Template(args) {
+  return <SelectedTaskInfo {...args} />;
+}
 
 export const SelectedTaskInfoComponent = Template.bind({});
 

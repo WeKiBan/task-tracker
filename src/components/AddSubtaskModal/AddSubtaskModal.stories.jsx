@@ -1,18 +1,20 @@
-import AddSubtaskModal from "./AddSubtaskModal";
+import AddSubtaskModal from './AddSubtaskModal';
 
 export default {
-  title: "Modals/AddSubtaskModal",
+  title: 'Modals/AddSubtaskModal',
   component: AddSubtaskModal,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => <AddSubtaskModal {...args} />;
+function Template(args) {
+  return <AddSubtaskModal {...args} />;
+}
 
 export const Default = Template.bind({});
 Default.args = {
   isOpen: true,
-  onClose: () => console.log("close"),
+  onClose: () => console.log('close'),
   handleAddNewSubtask: (id, link, title) => console.log(id, link, title),
 };

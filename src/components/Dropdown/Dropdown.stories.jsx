@@ -1,25 +1,28 @@
-import { fn } from "@storybook/test";
-import Dropdown from "./Dropdown";
-import { TICKET_STATUSES } from "../../config/constants";
+import { fn } from '@storybook/test';
+
+import { TICKET_STATUSES } from '../../config/constants';
+import Dropdown from './Dropdown';
 
 export default {
-  title: "Dropdown",
+  title: 'Dropdown',
   component: Dropdown,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-const Template = (args) => (
-  <div style={{ width: "400px" }}>
-    <Dropdown {...args} />
-  </div>
-);
+function Template(args) {
+  return (
+    <div style={{ width: '400px' }}>
+      <Dropdown {...args} />
+    </div>
+  );
+}
 
 export const DropdownComponent = Template.bind({});
 
 DropdownComponent.args = {
-  value: { key: "notStarted", label: "Not started" },
+  value: { key: 'notStarted', label: 'Not started' },
   options: TICKET_STATUSES,
-  onChange: fn(() => console.log("change item")),
+  onChange: fn(() => console.log('change item')),
 };

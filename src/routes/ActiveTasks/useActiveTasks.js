@@ -1,23 +1,24 @@
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { updateMultipleTasksRequest } from "../../redux/features/tasks/tasksActions";
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { updateMultipleTasksRequest } from '../../redux/features/tasks/tasksActions';
 
 export const useActiveTasks = () => {
   const dispatch = useDispatch();
-  const tasks = useSelector((state) =>
-    [...state.tasks.tasks].sort((a, b) => a.order - b.order),
-  );
+  const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-
+  const tasks = useSelector((state) => [...state.tasks.tasks].sort((a, b) => a.order - b.order));
   const selectedTask = useSelector((state) =>
     state.tasks.tasks.find((t) => t.id === selectedTaskId),
   );
 
-  useEffect(() => {
-    if (tasks.length > 0 && !selectedTaskId) {
-      setSelectedTaskId(tasks[0].id);
-    }
-  }, [tasks, selectedTaskId]);
+  const openTaskModal = () => {
+    setAddTaskModalOpen(true);
+  };
+
+  const closeTaskModal = () => {
+    setAddTaskModalOpen(false);
+  };
 
   const onSelectTask = (task) => {
     setSelectedTaskId(task.id);
@@ -55,17 +56,21 @@ export const useActiveTasks = () => {
     }
   };
 
-  const onClickAdd = () => {
-    console.log("add");
-  };
+  useEffect(() => {
+    if (tasks.length > 0 && !selectedTaskId) {
+      setSelectedTaskId(tasks[0].id);
+    }
+  }, [tasks, selectedTaskId]);
 
   return {
     tasks,
     selectedTaskId,
     selectedTask,
+    addTaskModalOpen,
+    closeTaskModal,
+    openTaskModal,
     onSelectTask,
     onClickArrowUp,
     onClickArrowDown,
-    onClickAdd,
   };
 };

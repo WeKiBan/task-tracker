@@ -1,6 +1,6 @@
-import { Button, AddIcon } from "./EmptyListItem.styles";
+import { AddIcon, Button } from './EmptyListItem.styles';
 
-const EmptyListItem = ({ onClickAdd, height, iconSize }) => {
+function EmptyListItem({ onClickAdd, height, iconSize }) {
   return (
     <Button
       height={height}
@@ -12,6 +12,6 @@ const EmptyListItem = ({ onClickAdd, height, iconSize }) => {
       <AddIcon iconSize={iconSize} />
     </Button>
   );
-};
+}
 
 export default EmptyListItem;

@@ -1,16 +1,16 @@
-import { Wrapper, Container, Column } from "./SelectedTaskInfo.styles";
-import SelectedTaskHeader from "../SelectedTaskHeader/SelectedTaskHeader";
-import SubtaskListItem from "../SubtaskListItem/SubtaskListItem";
-import LinkListItem from "../LinkListItem/LinkListItem";
-import TextInput from "../TextInput/TextInput";
-import ListContainer from "../ListContainer/ListContainer";
-import ProjectListItem from "../ProjectListItem/ProjectListItem";
-import { useTaskForm } from "./useTaskForm";
-import AddSubtaskModal from "../AddSubtaskModal/AddSubtaskModal";
-import AddLinkModal from "../AddLinkModal/AddLinkModal";
-import AddProjectModal from "../AddProjectModal/AddProjectModal";
+import AddLinkModal from '../AddLinkModal/AddLinkModal';
+import AddProjectModal from '../AddProjectModal/AddProjectModal';
+import AddSubtaskModal from '../AddSubtaskModal/AddSubtaskModal';
+import LinkListItem from '../LinkListItem/LinkListItem';
+import ListContainer from '../ListContainer/ListContainer';
+import ProjectListItem from '../ProjectListItem/ProjectListItem';
+import SelectedTaskHeader from '../SelectedTaskHeader/SelectedTaskHeader';
+import SubtaskListItem from '../SubtaskListItem/SubtaskListItem';
+import TextInput from '../TextInput/TextInput';
+import { Column, Container, Wrapper } from './SelectedTaskInfo.styles';
+import { useTaskForm } from './useTaskForm';
 
-const SelectedTaskInfo = ({ task }) => {
+function SelectedTaskInfo({ task }) {
   const {
     description,
     notes,
@@ -27,8 +27,6 @@ const SelectedTaskInfo = ({ task }) => {
     onDeleteLink,
     onDeleteProject,
     onDeleteSubtask,
-    handleAddNewSubtask,
-    handleAddNewLink,
     closeLinkModal,
     openLinkModal,
     closeProjectModal,
@@ -37,23 +35,19 @@ const SelectedTaskInfo = ({ task }) => {
 
   return (
     <>
-      <Wrapper sx={{ height: "100%", minHeight: 0 }}>
+      <Wrapper sx={{ height: '100%', minHeight: 0 }}>
         <SelectedTaskHeader task={task} />
-        <Container
-          padding="10px"
-          flexDirection="row"
-          justifyContent="space-between"
-        >
+        <Container padding="10px" flexDirection="row" justifyContent="space-between">
           <Column flexamount={7}>
             <TextInput
               value={description}
               onChange={handleDescriptionChange}
-              onBlur={() => handleBlur("description")}
+              onBlur={() => handleBlur('description')}
               rows="3"
               label="Description"
             />
             <TextInput
-              onBlur={() => handleBlur("notes")}
+              onBlur={() => handleBlur('notes')}
               onChange={handleNotesChange}
               value={notes}
               rows="10"
@@ -75,18 +69,14 @@ const SelectedTaskInfo = ({ task }) => {
                 {task &&
                   task.links &&
                   task.links.map((link) => (
-                    <LinkListItem
-                      onClickDelete={onDeleteLink}
-                      key={link.id}
-                      linkData={link}
-                    />
+                    <LinkListItem onClickDelete={onDeleteLink} key={link.id} linkData={link} />
                   ))}
               </ListContainer>
             </Container>
           </Column>
-          <Column sx={{ minHeight: "0" }} flexamount={3}>
+          <Column sx={{ minHeight: '0' }} flexamount={3}>
             <TextInput
-              onBlur={() => handleBlur("emailNote")}
+              onBlur={() => handleBlur('emailNote')}
               onChange={handleEmailNoteChange}
               value={emailNote}
               rows="3"
@@ -108,23 +98,11 @@ const SelectedTaskInfo = ({ task }) => {
           </Column>
         </Container>
       </Wrapper>
-      <AddSubtaskModal
-        isOpen={addSubtaskModalOpen}
-        onClose={closeSubtaskModal}
-        handleAddNewSubtask={handleAddNewSubtask}
-      />
-      <AddLinkModal
-        isOpen={addLinkModalOpen}
-        onClose={closeLinkModal}
-        handleAddNewLink={handleAddNewLink}
-      />
-      <AddProjectModal
-        isOpen={addProjectModalOpen}
-        onClose={closeProjectModal}
-        task={task}
-      />
+      <AddSubtaskModal isOpen={addSubtaskModalOpen} onClose={closeSubtaskModal} task={task} />
+      <AddLinkModal isOpen={addLinkModalOpen} onClose={closeLinkModal} task={task} />
+      <AddProjectModal isOpen={addProjectModalOpen} onClose={closeProjectModal} task={task} />
     </>
   );
-};
+}
 
 export default SelectedTaskInfo;

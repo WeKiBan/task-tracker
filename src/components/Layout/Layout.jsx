@@ -1,7 +1,8 @@
-import { Box } from "@mui/material";
-import NavBar from "../Nav/Nav";
-import { useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { Box } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
+
+import NavBar from '../Nav/Nav';
 
 export default function Layout({ children }) {
   const { authToken, emailVerified } = useSelector((state) => state.auth);
@@ -9,17 +10,15 @@ export default function Layout({ children }) {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        maxHeight: "100%",
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        maxHeight: '100%',
       }}
     >
-      {location.pathname === "/active-tasks" ||
-        (location.pathname === "/inactive-tasks" &&
-          authToken &&
-          emailVerified && <NavBar />)}
-      {location.pathname === "/" && <NavBar />}
+      {location.pathname === '/active-tasks' ||
+        (location.pathname === '/inactive-tasks' && authToken && emailVerified && <NavBar />)}
+      {location.pathname === '/' && <NavBar />}
       {children}
     </Box>
   );

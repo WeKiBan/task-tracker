@@ -1,15 +1,19 @@
+import { call, put, takeLatest } from 'redux-saga/effects';
+
 import {
-  updateTaskSuccess,
-  updateMultipleTasksSuccess,
-  taskError,
-} from "./tasksSlice";
-import { put, call, takeLatest } from "redux-saga/effects";
-import {
-  UPDATE_TASK_REQUEST,
+  ADD_TASK_REQUEST,
   UPDATE_MULTIPLE_TASKS_REQUEST,
-} from "./taskActionTypes";
+  UPDATE_TASK_REQUEST,
+} from './taskActionTypes';
+import {
+  addTaskSuccess,
+  taskError,
+  updateMultipleTasksSuccess,
+  updateTaskSuccess,
+} from './tasksSlice';
 
 function updateTaskInFirebase(updatedTask) {
+  console.log(updatedTask);
   // Replace with real Firebase call later
   return Promise.resolve(); // fake async
 }
@@ -25,7 +29,7 @@ function* updateTaskSaga(action) {
     console.log(`Task updated: ${updatedTask.id}`, updatedTask);
   } catch (error) {
     console.log(error);
-    yield put(taskError("Failed to update task"));
+    yield put(taskError('Failed to update task'));
   }
 }
 
@@ -36,16 +40,42 @@ export function* watchUpdateTask() {
 function* updateMultipleTasksSaga(action) {
   const tasksToUpdate = action.payload;
   try {
-    for (let task of tasksToUpdate) {
-      yield call(updateTaskInFirebase, task);
-    }
+    yield call(
+      [].concat.bind(Array),
+      tasksToUpdate.map((task) => call(updateTaskInFirebase, task)),
+    );
     yield put(updateMultipleTasksSuccess(tasksToUpdate));
   } catch (error) {
     console.log(error);
-    yield put(taskError("Failed to update task order"));
+    yield put(taskError('Failed to update task order'));
   }
 }
 
 export function* watchUpdateMultipleTasksSaga() {
   yield takeLatest(UPDATE_MULTIPLE_TASKS_REQUEST, updateMultipleTasksSaga);
+}
+
+function addTaskInFirebase(updatedTask) {
+  console.log(updatedTask);
+  // Replace with real Firebase call later
+  return Promise.resolve(); // fake async
+}
+
+function* addTaskSaga(action) {
+  const newTask = action.payload;
+
+  try {
+    // Call Firebase (async)
+    yield call(addTaskInFirebase, newTask);
+    // Then update Redux
+    yield put(addTaskSuccess(newTask));
+    console.log(`Task updated: ${newTask.id}`, newTask);
+  } catch (error) {
+    console.log(error);
+    yield put(taskError('Failed to add task'));
+  }
+}
+
+export function* watchAddTask() {
+  yield takeLatest(ADD_TASK_REQUEST, addTaskSaga);
 }

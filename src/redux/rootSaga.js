@@ -1,14 +1,13 @@
 // src/redux/rootSaga.js
-import { all } from "redux-saga/effects";
+import { all } from 'redux-saga/effects';
+
+import { watchCreateUser, watchSignInUser, watchSignInUserGoogle } from './features/auth/authSaga';
+import { watchUpdateProjects } from './features/projects/projectsSaga';
 import {
-  watchSignInUser,
-  watchSignInUserGoogle,
-  watchCreateUser,
-} from "./features/auth/authSaga";
-import {
-  watchUpdateTask,
+  watchAddTask,
   watchUpdateMultipleTasksSaga,
-} from "./features/tasks/tasksSaga";
+  watchUpdateTask,
+} from './features/tasks/tasksSaga';
 
 export default function* rootSaga() {
   yield all([
@@ -17,5 +16,7 @@ export default function* rootSaga() {
     watchCreateUser(),
     watchUpdateTask(),
     watchUpdateMultipleTasksSaga(),
+    watchAddTask(),
+    watchUpdateProjects(),
   ]);
 }

@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   tasks: [],
@@ -6,26 +6,27 @@ const initialState = {
 };
 
 const taskSlice = createSlice({
-  name: "tasks",
+  name: 'tasks',
   initialState,
   reducers: {
     setTasks: (state, action) => {
       state.tasks = action.payload;
     },
+    addTaskSuccess: (state, action) => {
+      state.tasks = [...state.tasks, action.payload];
+    },
     updateTaskSuccess: (state, action) => {
       const updatedTask = action.payload;
-      state.tasks = state.tasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task,
-      );
+      state.tasks = state.tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task));
     },
     updateMultipleTasksSuccess: (state, action) => {
       const updated = action.payload;
-      for (let updatedTask of updated) {
+      updated.forEach((updatedTask) => {
         const index = state.tasks.findIndex((t) => t.id === updatedTask.id);
         if (index !== -1) {
           state.tasks[index] = updatedTask;
         }
-      }
+      });
     },
     taskError: (state, action) => {
       state.error = action.payload;
@@ -35,11 +36,11 @@ const taskSlice = createSlice({
 
 export const {
   setTasks,
+  addTaskSuccess,
   updateTaskSuccess,
-  addSubtaskSuccess,
-  addProjectSuccess,
-  taskError,
   updateMultipleTasksSuccess,
+  addSubtaskSuccess,
+  taskError,
 } = taskSlice.actions;
 
 export default taskSlice.reducer;

@@ -1,10 +1,11 @@
-import { useDispatch } from "react-redux";
-import { onAuthStateChanged } from "firebase/auth";
-import { loginUserSuccess } from "../../redux/features/auth/authSlice";
-import { useEffect } from "react";
-import { auth } from "../../config/firebase";
+import { onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
-const AuthListener = () => {
+import { auth } from '../../config/firebase';
+import { loginUserSuccess } from '../../redux/features/auth/authSlice';
+
+function AuthListener() {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -34,6 +35,6 @@ const AuthListener = () => {
   }, [dispatch]);
 
   return null;
-};
+}
 
 export default AuthListener;

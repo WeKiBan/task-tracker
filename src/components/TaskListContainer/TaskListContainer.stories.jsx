@@ -1,17 +1,18 @@
-import TaskListContainer from "./TaskListContainer";
-import { mockTasks } from "../../../.storybook/mocks/tasks";
-import TaskListItem from "../TaskListItem/TaskListItem";
-import { useState } from "react";
+import { useState } from 'react';
+
+import { mockTasks } from '../../../.storybook/mocks/tasks';
+import TaskListItem from '../TaskListItem/TaskListItem';
+import TaskListContainer from './TaskListContainer';
 
 export default {
-  title: "Task List Container",
+  title: 'Task List Container',
   component: TaskListContainer,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
 };
 
-export const TaskListContainerComponent = (args) => {
+export function TaskListContainerComponent(args) {
   const [selectedTaskId, setSelectedtaskId] = useState(mockTasks[0]?.id);
   const [tasks, setTasks] = useState(mockTasks);
 
@@ -30,7 +31,7 @@ export const TaskListContainerComponent = (args) => {
   };
 
   return (
-    <div style={{ width: "344px", height: "450px" }}>
+    <div style={{ width: '344px', height: '450px' }}>
       <TaskListContainer onSearch={onSearch} onClickAdd={onClickAdd} {...args}>
         {tasks.map((task) => (
           <TaskListItem
@@ -46,13 +47,13 @@ export const TaskListContainerComponent = (args) => {
       </TaskListContainer>
     </div>
   );
-};
+}
 
 TaskListContainerComponent.args = {
-  emptyElementHeight: "8.6rem",
+  emptyElementHeight: '8.6rem',
 };
 
-export const EmptyListContainerComponent = (args) => {
+export function EmptyListContainerComponent(args) {
   const [selectedTaskId, setSelectedtaskId] = useState(mockTasks[0]?.id);
 
   const onSelectTask = (id) => setSelectedtaskId(id);
@@ -60,7 +61,7 @@ export const EmptyListContainerComponent = (args) => {
   const onClickArrowUp = (id) => console.log(`move task ${id} up`);
   const onClickAdd = () => console.log(`add task`);
   return (
-    <div style={{ width: "344px", height: "450px" }}>
+    <div style={{ width: '344px', height: '450px' }}>
       <TaskListContainer {...args}>
         {[].map((task) => (
           <TaskListItem
@@ -76,8 +77,8 @@ export const EmptyListContainerComponent = (args) => {
       </TaskListContainer>
     </div>
   );
-};
+}
 
 EmptyListContainerComponent.args = {
-  emptyElementHeight: "8.6rem",
+  emptyElementHeight: '8.6rem',
 };

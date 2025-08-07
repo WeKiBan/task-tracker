@@ -7,10 +7,19 @@ export const useActiveTasks = () => {
   const dispatch = useDispatch();
   const [addTaskModalOpen, setAddTaskModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const tasks = useSelector((state) => [...state.tasks.tasks].sort((a, b) => a.order - b.order));
+  const activeTasks = useSelector((state) =>
+    [...state.tasks.tasks].sort((a, b) => a.order - b.order),
+  )
+    .filter((task) => task.status !== 'closed')
+    .sort((a, b) => a.order - b.order);
   const selectedTask = useSelector((state) =>
     state.tasks.tasks.find((t) => t.id === selectedTaskId),
   );
+  const [query, setQuery] = useState('');
+
+  const handleSearch = (search) => {
+    setQuery(search);
+  };
 
   const openTaskModal = () => {
     setAddTaskModalOpen(true);
@@ -25,11 +34,11 @@ export const useActiveTasks = () => {
   };
 
   const onClickArrowUp = (taskId) => {
-    const index = tasks.findIndex((t) => t.id === taskId);
+    const index = activeTasks.findIndex((t) => t.id === taskId);
 
     if (index > 0) {
-      const currentTask = { ...tasks[index] };
-      const previousTask = { ...tasks[index - 1] };
+      const currentTask = { ...activeTasks[index] };
+      const previousTask = { ...activeTasks[index - 1] };
 
       // Swap their order values
       const temp = currentTask.order;
@@ -41,11 +50,11 @@ export const useActiveTasks = () => {
   };
 
   const onClickArrowDown = (taskId) => {
-    const index = tasks.findIndex((t) => t.id === taskId);
+    const index = activeTasks.findIndex((t) => t.id === taskId);
 
-    if (index < tasks.length - 1) {
-      const currentTask = { ...tasks[index] };
-      const nextTask = { ...tasks[index + 1] };
+    if (index < activeTasks.length - 1) {
+      const currentTask = { ...activeTasks[index] };
+      const nextTask = { ...activeTasks[index + 1] };
 
       // Swap their order
       const temp = currentTask.order;
@@ -57,22 +66,26 @@ export const useActiveTasks = () => {
   };
 
   useEffect(() => {
-    const taskStillExists = tasks.some((t) => t.id === selectedTaskId);
+    const taskStillExists = activeTasks.some((t) => t.id === selectedTaskId);
 
-    if (!taskStillExists) {
-      setSelectedTaskId(tasks[0].id || null);
+    if (!activeTasks.length) {
+      setSelectedTaskId(null);
+    } else if (!taskStillExists) {
+      setSelectedTaskId(activeTasks[0].id || null);
     }
-  }, [tasks, selectedTaskId]);
+  }, [activeTasks, selectedTaskId]);
 
   return {
-    tasks,
+    activeTasks,
     selectedTaskId,
     selectedTask,
     addTaskModalOpen,
+    query,
     closeTaskModal,
     openTaskModal,
     onSelectTask,
     onClickArrowUp,
     onClickArrowDown,
+    handleSearch,
   };
 };

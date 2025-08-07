@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { addTaskRequest, updateTaskRequest } from '../../redux/features/tasks/tasksActions';
 
@@ -7,6 +7,9 @@ export const useAddTaskModal = (onClose, onSelectTask, task) => {
   const dispatch = useDispatch();
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
+  const activeTasks = useSelector((state) =>
+    state.tasks.tasks.filter((t) => t.status !== 'closed'),
+  );
 
   useEffect(() => {
     setTitle(task?.title || '');
@@ -23,10 +26,12 @@ export const useAddTaskModal = (onClose, onSelectTask, task) => {
       dispatch(updateTaskRequest(updatedTask));
       console.log(`Task edited with Id: ${updatedTask.id}`);
     } else {
+      const maxOrder = Math.max(...activeTasks.map((t) => t.order), 0);
+      const nextOrder = maxOrder + 1;
       const id = crypto.randomUUID();
       const newTask = {
         id,
-        order: 5,
+        order: nextOrder,
         title,
         status: 'notStarted',
         link,

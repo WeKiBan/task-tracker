@@ -34,7 +34,7 @@ const theme = createTheme({
       lightGrey: '#4B505D80',
     },
     buttonColors: {
-      blue: '#308FFF',
+      blue: 'rgb(63, 81, 18',
     },
   },
 });

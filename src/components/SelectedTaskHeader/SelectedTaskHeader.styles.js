@@ -12,7 +12,7 @@ export const HeaderWrapper = styled('div', {
   backgroundColor: theme.palette.backgroundColors.white,
   borderLeft: `1.2rem solid ${theme.palette.taskStatusColors[status]}`,
   width: '100%',
-  padding: '0.9rem',
+  padding: '0.5rem',
 }));
 
 export const Title = styled(Typography)(({ theme }) => ({

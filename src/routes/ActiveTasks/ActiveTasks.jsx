@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 
 import AddTaskModal from '../../components/AddTaskModal/AddTaskModal';
+import NoTasks from '../../components/NoTasks/NoTasks';
 import SelectedTaskInfo from '../../components/SelectedTaskInfo/SelectedTaskInfo';
 import TaskListContainer from '../../components/TaskListContainer/TaskListContainer';
 import TaskListItem from '../../components/TaskListItem/TaskListItem';
@@ -8,15 +9,17 @@ import { useActiveTasks } from './useActiveTasks';
 
 function ActiveTasks() {
   const {
-    tasks,
+    activeTasks,
     selectedTaskId,
     selectedTask,
     addTaskModalOpen,
+    query,
     closeTaskModal,
     openTaskModal,
     onSelectTask,
     onClickArrowUp,
     onClickArrowDown,
+    handleSearch,
   } = useActiveTasks();
 
   return (
@@ -28,16 +31,23 @@ function ActiveTasks() {
           width: '100%',
           height: '100%',
           gap: '12px',
+          padding: '10px',
         }}
         component="main"
       >
-        {selectedTask && tasks && tasks.length > 0 && (
-          <TaskListContainer
-            onClickAdd={openTaskModal}
-            emptyElementHeight="90"
-            onSearch={() => console.log('Search not implemented')}
-          >
-            {tasks.map((task) => (
+        <TaskListContainer
+          onClickAdd={openTaskModal}
+          emptyElementHeight="90px"
+          onSearch={handleSearch}
+          query={query}
+        >
+          {activeTasks
+            .filter(
+              (task) =>
+                task.title.toLowerCase().includes(query.toLowerCase()) ||
+                task.description.toLowerCase().includes(query.toLowerCase()),
+            )
+            .map((task) => (
               <TaskListItem
                 key={task.id}
                 onSelectTask={onSelectTask}
@@ -47,10 +57,9 @@ function ActiveTasks() {
                 selectedTaskId={selectedTaskId}
               />
             ))}
-          </TaskListContainer>
-        )}
-
-        {selectedTask ? <SelectedTaskInfo task={selectedTask} /> : <div>Select a task</div>}
+        </TaskListContainer>
+        {activeTasks.length === 0 && <NoTasks handleAddNewTask={openTaskModal} />}
+        {activeTasks.length !== 0 && selectedTask && <SelectedTaskInfo task={selectedTask} />}
       </Box>
       <AddTaskModal
         isOpen={addTaskModalOpen}

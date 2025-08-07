@@ -8,6 +8,7 @@ export const Search = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.backgroundColors.white,
   marginLeft: 0,
   width: '100%',
+  height: '100%',
 }));
 
 export const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -35,6 +36,7 @@ export const StyledInputBase = styled(InputBase, {
   border: `1px solid ${theme.palette.borderColors.lightGrey}`,
   borderRadius: '0.4rem',
   width: '100%',
+  height: '100%',
   '& .MuiInputBase-input': {
     fontSize,
     padding: theme.spacing(1, 1, 1, 0),

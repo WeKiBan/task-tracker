@@ -10,6 +10,11 @@ export const useTaskForm = (task) => {
   const [addSubtaskModalOpen, setAddSubtaskModalOpen] = useState(false);
   const [addLinkModalOpen, setAddLinkModalOpen] = useState(false);
   const [addProjectModalOpen, setAddProjectModalOpen] = useState(false);
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState({
+    type: null,
+    itemId: null,
+    isOpen: false,
+  });
 
   const dispatch = useDispatch();
 
@@ -35,6 +40,13 @@ export const useTaskForm = (task) => {
 
   const closeProjectModal = () => {
     setAddProjectModalOpen(false);
+  };
+  const handleOpenConfirmDeleteModal = (type, itemId) => {
+    setConfirmDeleteModalOpen({ type, isOpen: true, itemId });
+  };
+
+  const handleCloseConfirmDeleteModal = () => {
+    setConfirmDeleteModalOpen({ type: null, isOpen: false, itemId: null });
   };
 
   const handleBlur = (input) => {
@@ -93,6 +105,23 @@ export const useTaskForm = (task) => {
     console.log(`Delete link with id: ${id}`);
   };
 
+  const handleConfirmDelete = () => {
+    switch (confirmDeleteModalOpen.type) {
+      case 'project':
+        onDeleteProject(confirmDeleteModalOpen.itemId);
+        break;
+      case 'link':
+        onDeleteLink(confirmDeleteModalOpen.itemId);
+        break;
+      case 'subtask':
+        onDeleteSubtask(confirmDeleteModalOpen.itemId);
+        break;
+      default:
+        console.log(`No matching type: ${confirmDeleteModalOpen}`);
+    }
+    handleCloseConfirmDeleteModal();
+  };
+
   useEffect(() => {
     setDescription(task?.description || '');
     setNotes(task?.notes || '');
@@ -106,6 +135,7 @@ export const useTaskForm = (task) => {
     addSubtaskModalOpen,
     addLinkModalOpen,
     addProjectModalOpen,
+    confirmDeleteModalOpen,
     openSubtaskModal,
     closeSubtaskModal,
     openLinkModal,
@@ -119,5 +149,9 @@ export const useTaskForm = (task) => {
     onDeleteLink,
     onDeleteProject,
     onDeleteSubtask,
+    setConfirmDeleteModalOpen,
+    handleCloseConfirmDeleteModal,
+    handleOpenConfirmDeleteModal,
+    handleConfirmDelete,
   };
 };

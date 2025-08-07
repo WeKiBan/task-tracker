@@ -1,12 +1,11 @@
 import { Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const Wrapper = styled(Box)(({ theme }) => ({
+export const Wrapper = styled(Box)(() => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
   height: '100%',
-  background: theme.palette.backgroundColors.mediumGrey,
 }));
 
 export const Container = styled(Box)(({ theme, flexDirection, justifyContent, padding }) => ({
@@ -17,7 +16,6 @@ export const Container = styled(Box)(({ theme, flexDirection, justifyContent, pa
   height: '100%',
   gap: theme.spacing(2),
   padding: padding || '',
-  background: theme.palette.backgroundColors.lightGrey,
   borderRadius: theme.shape.borderRadius,
   minHeight: 0,
   minWidth: 0,
@@ -28,6 +26,5 @@ export const Column = styled(Box)(({ theme, flexamount }) => ({
   flexDirection: 'column',
   gap: theme.spacing(2),
   flex: flexamount || 1,
-  background: theme.palette.backgroundColors.lightGrey,
   borderRadius: theme.shape.borderRadius,
 }));

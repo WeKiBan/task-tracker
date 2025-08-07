@@ -40,8 +40,8 @@ function Nav({ isStorybook = false }) {
   };
 
   return (
-    <AppBar position="static" elevation={0}>
-      <Toolbar>
+    <AppBar position="static" elevation={0} sx={{ minHeight: 48, height: 48 }}>
+      <Toolbar sx={{ minHeight: 48, '@media (min-width:600px)': { minHeight: 48 } }}>
         <TextButtonContainer>
           <LogoText>TaskFlow</LogoText>
           {!!user ||

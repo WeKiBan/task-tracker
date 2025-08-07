@@ -9,7 +9,7 @@ export const Wrapper = styled(Box)(() => ({
 
 export const Label = styled(Typography)(({ theme }) => ({
   color: theme.palette.textColors.darkGrey,
-  fontSize: '1.6rem',
+  fontSize: '1.4rem',
   lineHeight: '3.2rem',
   paddingLeft: '0.8rem',
   borderBottom: `1px solid ${theme.palette.borderColors.lightGrey}`,
@@ -17,7 +17,7 @@ export const Label = styled(Typography)(({ theme }) => ({
 
 export const TextField = styled(TextFieldComponent)(({ theme }) => ({
   width: '100%',
-  fontSize: '1.6rem',
+  fontSize: '1.2rem',
   background: theme.palette.backgroundColors.white,
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
@@ -25,6 +25,6 @@ export const TextField = styled(TextFieldComponent)(({ theme }) => ({
     },
   },
   '& .MuiInputBase-input': {
-    fontSize: '1.6rem',
+    fontSize: '1.2rem',
   },
 }));

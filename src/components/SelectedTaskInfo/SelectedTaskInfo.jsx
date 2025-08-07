@@ -3,6 +3,7 @@ import AddProjectModal from '../AddProjectModal/AddProjectModal';
 import AddSubtaskModal from '../AddSubtaskModal/AddSubtaskModal';
 import LinkListItem from '../LinkListItem/LinkListItem';
 import ListContainer from '../ListContainer/ListContainer';
+import Modal from '../Modal/Modal';
 import ProjectListItem from '../ProjectListItem/ProjectListItem';
 import SelectedTaskHeader from '../SelectedTaskHeader/SelectedTaskHeader';
 import SubtaskListItem from '../SubtaskListItem/SubtaskListItem';
@@ -18,26 +19,27 @@ function SelectedTaskInfo({ task, resetSelectedTask }) {
     addSubtaskModalOpen,
     addLinkModalOpen,
     addProjectModalOpen,
+    confirmDeleteModalOpen,
     handleBlur,
     handleDescriptionChange,
     handleNotesChange,
     handleEmailNoteChange,
     openSubtaskModal,
     closeSubtaskModal,
-    onDeleteLink,
-    onDeleteProject,
-    onDeleteSubtask,
     closeLinkModal,
     openLinkModal,
     closeProjectModal,
     openProjectModal,
+    handleOpenConfirmDeleteModal,
+    handleConfirmDelete,
+    handleCloseConfirmDeleteModal,
   } = useTaskForm(task);
 
   return (
     <>
       <Wrapper sx={{ height: '100%', minHeight: 0 }}>
         <SelectedTaskHeader task={task} resetSelectedTask={resetSelectedTask} />
-        <Container padding="10px" flexDirection="row" justifyContent="space-between">
+        <Container padding="10px 0" flexDirection="row" justifyContent="space-between">
           <Column flexamount={7}>
             <TextInput
               value={description}
@@ -61,7 +63,7 @@ function SelectedTaskInfo({ task, resetSelectedTask }) {
                     <SubtaskListItem
                       key={subtask.id}
                       subtask={subtask}
-                      onClickDelete={onDeleteSubtask}
+                      onClickDelete={() => handleOpenConfirmDeleteModal('subtask', subtask.id)}
                     />
                   ))}
               </ListContainer>
@@ -69,7 +71,11 @@ function SelectedTaskInfo({ task, resetSelectedTask }) {
                 {task &&
                   task.links &&
                   task.links.map((link) => (
-                    <LinkListItem onClickDelete={onDeleteLink} key={link.id} linkData={link} />
+                    <LinkListItem
+                      onClickDelete={() => handleOpenConfirmDeleteModal('link', link.id)}
+                      key={link.id}
+                      linkData={link}
+                    />
                   ))}
               </ListContainer>
             </Container>
@@ -91,7 +97,7 @@ function SelectedTaskInfo({ task, resetSelectedTask }) {
                     title={project.label}
                     key={project.id}
                     project={project}
-                    onClickDelete={onDeleteProject}
+                    onClickDelete={() => handleOpenConfirmDeleteModal('project', project.id)}
                   />
                 ))}
             </ListContainer>
@@ -101,6 +107,14 @@ function SelectedTaskInfo({ task, resetSelectedTask }) {
       <AddSubtaskModal isOpen={addSubtaskModalOpen} onClose={closeSubtaskModal} task={task} />
       <AddLinkModal isOpen={addLinkModalOpen} onClose={closeLinkModal} task={task} />
       <AddProjectModal isOpen={addProjectModalOpen} onClose={closeProjectModal} task={task} />
+      {/* confirm delete modal */}
+      <Modal
+        isOpen={confirmDeleteModalOpen.isOpen}
+        title={`Are you sure you want to delete this ${confirmDeleteModalOpen.type}?`}
+        onClose={() => handleCloseConfirmDeleteModal(false)}
+        onConfirm={() => handleConfirmDelete(confirmDeleteModalOpen.id)}
+        showActions
+      />
     </>
   );
 }

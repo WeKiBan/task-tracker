@@ -32,9 +32,10 @@ export const LabelWrapper = styled(Box)(({ theme }) => ({
 
 export const Label = styled(Typography)(({ theme }) => ({
   color: theme.palette.textColors.darkGrey,
-  fontSize: '1.6rem',
+  fontSize: '1.4rem',
   lineHeight: '3.2rem',
   paddingLeft: '0.8rem',
+  fontWeight: 'bold',
 }));
 
 export const IconButton = styled(IconButtonComponent)(() => ({

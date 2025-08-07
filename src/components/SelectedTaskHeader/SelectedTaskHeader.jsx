@@ -20,16 +20,21 @@ function SelectedTaskHeader({ task }) {
         <Title>{title}</Title>
         <StatusWrapper>
           <IconButton onClick={() => setEditTaskModalIsOpen(true)}>
-            <Edit />
+            <Edit sx={{ fontSize: 20 }} />
           </IconButton>
           <IconButton onClick={() => setConfirmDeleteModalIsOpen(true)}>
-            <Delete />
+            <Delete sx={{ fontSize: 20 }} />
           </IconButton>
           <IconButton component="a" href={link} target="_blank" rel="noopener noreferrer">
-            <LinkIcon />
+            <LinkIcon sx={{ fontSize: 20 }} />
           </IconButton>
           <StatusLabel>Status:</StatusLabel>
-          <Dropdown options={TICKET_STATUSES} value={status} onChange={handleUpdateStatus} />
+          <Dropdown
+            width="100px"
+            options={TICKET_STATUSES}
+            value={status}
+            onChange={handleUpdateStatus}
+          />
         </StatusWrapper>
       </HeaderWrapper>
       <Modal

@@ -1,4 +1,4 @@
-import { Add } from '@mui/icons-material';
+import { Add, Search as SearchIconComponent } from '@mui/icons-material';
 import { Box, Button as ButtonComponent } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -47,4 +47,37 @@ export const ItemContainer = styled(Box)(() => ({
   overflowY: 'auto',
   height: '100%',
   maxHeight: '100%',
+}));
+
+export const NoMatchingSearchResults = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '1rem',
+  width: '100%',
+  marginTop: '0.8rem',
+  fontSize: '16px',
+  padding: 20,
+}));
+
+export const SearchIcon = styled(SearchIconComponent, {
+  shouldForwardProp: (prop) => prop !== 'fontSize' && prop !== 'iconSize',
+})(({ theme, iconSize }) => ({
+  color: theme.palette.textColors.lightGrey,
+  height: iconSize,
+  width: iconSize,
+}));
+
+export const EmptySearchText = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  textAlign: 'center',
+  color: 'grey',
+  '& span:first-of-type': {
+    fontWeight: 'bold',
+    fontSize: '24px',
+  },
 }));

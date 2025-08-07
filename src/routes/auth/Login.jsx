@@ -74,7 +74,7 @@ function Login() {
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        height: '100v%',
+        height: '100%',
         backgroundImage:
           'url("https://images.unsplash.com/photo-1637611331620-51149c7ceb94?q=80&w=2940")',
         backgroundSize: 'cover',

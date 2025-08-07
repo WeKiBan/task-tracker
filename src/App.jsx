@@ -33,7 +33,7 @@ function App() {
               <Route path="/verify-email" element={<Verify />} />
               <Route path="/user-actions" element={<Action />} />
               <Route
-                path="/tasks"
+                path="/active-tasks"
                 element={
                   <ProtectedRoute>
                     <ActiveTasks />

@@ -28,7 +28,7 @@ const TaskTableRow = ({ task, handleFilterTasks, showActive, handleOpenCloseEdit
 
   const handleGoToTicket = () => {
     const ticketNumber = taskTicketText.split(' ')[0];
-    const address = `http://jira.internet.int/browse/${ticketNumber}`;
+    const address = `https://rcsuejira.atlassian.net/browse/${ticketNumber}`;
     window.open(address, '_blank');
   };
 

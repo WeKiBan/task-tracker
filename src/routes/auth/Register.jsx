@@ -53,7 +53,7 @@ function Register() {
   };
 
   const handleRegisterWithGoogle = () => {
-    dispatch({ type: LOGIN_REQUEST_GOOGLE, navigate });
+    dispatch({ type: LOGIN_REQUEST_GOOGLE, payload: { navigate } });
     setEmail('');
     setPassword('');
     setConfirmPassword('');

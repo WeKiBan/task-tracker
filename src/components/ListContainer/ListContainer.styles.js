@@ -35,7 +35,7 @@ export const Label = styled(Typography)(({ theme }) => ({
   fontSize: '1.4rem',
   lineHeight: '3.2rem',
   paddingLeft: '0.8rem',
-  fontWeight: 'bold',
+  fontWeight: 500,
 }));
 
 export const IconButton = styled(IconButtonComponent)(() => ({

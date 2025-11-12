@@ -11,7 +11,7 @@ export const STATUS_COLORS = {
   notStarted: 'grey',
   inDev: '#EE8434',
   inProd: '#7FB069',
-  inProgress: '#1976d2',
+  inProgress: '#3f51b5',
   blocked: '#C95D63',
   closed: '#AE8799',
 };

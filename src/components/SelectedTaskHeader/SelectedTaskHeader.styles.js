@@ -18,6 +18,7 @@ export const HeaderWrapper = styled('div', {
 export const Title = styled(Typography)(({ theme }) => ({
   color: theme.palette.textColors.darkGrey,
   fontSize: '1.6rem',
+  fontWeight: 600,
 }));
 
 export const StatusWrapper = styled('div', {

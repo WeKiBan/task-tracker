@@ -5,6 +5,7 @@ import { watchUpdateProjects } from './features/projects/projectsSaga';
 import {
   watchAddTask,
   watchDeleteTask,
+  watchFetchTasks,
   watchUpdateMultipleTasksSaga,
   watchUpdateTask,
 } from './features/tasks/tasksSaga';
@@ -19,5 +20,6 @@ export default function* rootSaga() {
     watchAddTask(),
     watchDeleteTask(),
     watchUpdateProjects(),
+    watchFetchTasks(),
   ]);
 }

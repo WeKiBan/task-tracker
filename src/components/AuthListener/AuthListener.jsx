@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import { auth } from '../../config/firebase';
 import { loginUserSuccess } from '../../redux/features/auth/authSlice';
+import { FETCH_TASKS_REQUEST } from '../../redux/features/tasks/taskActionTypes';
 
 function AuthListener() {
   const dispatch = useDispatch();
@@ -17,15 +18,21 @@ function AuthListener() {
             authToken: user.refreshToken,
             emailVerified: user.emailVerified,
             error: null,
+            isAuthLoaded: true,
           }),
         );
+
+        if (user.emailVerified) {
+          dispatch({ type: FETCH_TASKS_REQUEST });
+        }
       } else {
         dispatch(
           loginUserSuccess({
-            authToken: null,
             uid: null,
+            authToken: null,
             emailVerified: false,
             error: null,
+            isAuthLoaded: true,
           }),
         );
       }

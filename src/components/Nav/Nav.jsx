@@ -17,7 +17,7 @@ import {
 
 function Nav({ isStorybook = false }) {
   const navigate = useNavigate();
-  const user = useSelector((state) => state.auth.authToken);
+  const { uid } = useSelector((s) => s.auth);
   const { pathname } = useLocation();
 
   const handleOptionClick = (page) => {
@@ -43,46 +43,44 @@ function Nav({ isStorybook = false }) {
     <AppBar position="static" elevation={0} sx={{ minHeight: 48, height: 48 }}>
       <Toolbar sx={{ minHeight: 48, '@media (min-width:600px)': { minHeight: 48 } }}>
         <TextButtonContainer>
-          <LogoText>TaskFlow</LogoText>
-          {!!user ||
-            (isStorybook && (
-              <>
-                <TextButton
-                  fullWidth
-                  variant="secondary"
-                  onClick={() => handleOptionClick('/active-tasks')}
-                  isActive={isStorybook || pathname === '/active-tasks'}
-                >
-                  Active Tasks
-                </TextButton>
-                <TextButton
-                  fullWidth
-                  variant="secondary"
-                  onClick={() => handleOptionClick('/inactive-tasks')}
-                  isActive={pathname === '/inactive-tasks'}
-                >
-                  Inactive Tasks
-                </TextButton>
-              </>
-            ))}
-        </TextButtonContainer>
-        <IconButtonContainer>
-          {!!user || isStorybook ? (
+          <LogoText>TaskFlo</LogoText>
+
+          {(!!uid || isStorybook) && (
             <>
-              <IconButton onClick={() => handleOptionClick('/settings')}>
+              <TextButton
+                variant="secondary"
+                onClick={() => handleOptionClick('/active-tasks')}
+                isActive={isStorybook || pathname === '/active-tasks'}
+              >
+                Active Tasks
+              </TextButton>
+              <TextButton
+                variant="secondary"
+                onClick={() => handleOptionClick('/inactive-tasks')}
+                isActive={pathname === '/inactive-tasks'}
+              >
+                Inactive Tasks
+              </TextButton>
+            </>
+          )}
+        </TextButtonContainer>
+
+        <IconButtonContainer>
+          {!!uid || isStorybook ? (
+            <>
+              <IconButton color="primary" onClick={() => handleOptionClick('/settings')}>
                 <SettingsIcon />
               </IconButton>
-              <IconButton onClick={handleMail}>
+              <IconButton color="primary" onClick={handleMail}>
                 <MailIcon />
               </IconButton>
-              <IconButton onClick={handleLogout}>
+              <IconButton color="primary" onClick={handleLogout}>
                 <LogoutIcon />
               </IconButton>
             </>
           ) : (
             <>
               <Button
-                fullWidth
                 color="success"
                 variant="secondary"
                 onClick={() => handleOptionClick('/login')}
@@ -90,7 +88,6 @@ function Nav({ isStorybook = false }) {
                 Sign In
               </Button>
               <Button
-                fullWidth
                 color="success"
                 variant="secondary"
                 onClick={() => handleOptionClick('/register')}

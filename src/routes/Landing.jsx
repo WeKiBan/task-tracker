@@ -38,7 +38,7 @@ function Landing() {
         }}
       >
         <Typography variant="h1" sx={{ fontSize: '40px', fontWeight: 600 }}>
-          TaskFlow for Efficient Task Management
+          TaskFlo for Efficient Task Management
         </Typography>
         <Typography sx={{ fontSize: '18px' }}>
           Organize and manage your development tasks effortlessly. Track project details, update

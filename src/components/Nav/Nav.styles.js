@@ -17,7 +17,9 @@ export const TextButtonContainer = styled(Box)(() => ({
   gap: '1.6rem',
 }));
 
-export const TextButton = styled(Box)(({ theme, isActive }) => ({
+export const TextButton = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})(({ theme, isActive }) => ({
   display: 'flex',
   width: '100%',
   whiteSpace: 'nowrap',

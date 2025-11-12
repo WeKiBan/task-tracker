@@ -15,7 +15,7 @@ function NoTasks({ handleAddNewTask }) {
         No tasks yet!
       </Typography>
       <Typography sx={{ fontSize: '16px' }} component="p" gutterBottom>
-        Once you add tasks, they'll show up here.
+        Once you add tasks, they&apos;ll show up here.
       </Typography>
       <Button
         onClick={handleAddNewTask}

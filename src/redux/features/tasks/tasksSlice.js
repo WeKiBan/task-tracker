@@ -9,6 +9,9 @@ const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
+    fetchTasksSuccess(state, action) {
+      state.tasks = action.payload;
+    },
     setTasks: (state, action) => {
       state.tasks = action.payload;
     },
@@ -39,6 +42,7 @@ const taskSlice = createSlice({
 });
 
 export const {
+  fetchTasksSuccess,
   setTasks,
   addTaskSuccess,
   updateTaskSuccess,

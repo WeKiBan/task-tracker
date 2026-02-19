@@ -223,9 +223,9 @@ export default function Home() {
         <div className="container max-w-3xl mx-auto h-12 flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-black font-mono text-xs">DS</span>
+              <span className="text-primary-foreground font-black font-mono text-xs">TP</span>
             </div>
-            <h1 className="font-bold text-sm tracking-tight hidden sm:block">Dev Status</h1>
+            <h1 className="font-bold text-sm tracking-tight hidden sm:block">Task Pilot</h1>
           </div>
 
           <div className="flex items-center gap-1.5">

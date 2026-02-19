@@ -10,10 +10,25 @@ import {
   MoreVertical,
   ExternalLink,
   Trash2,
-  Archive
+  Archive,
+  Plus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, type Task, type TaskStatus } from "@/hooks/use-store";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,8 +37,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 
 interface TaskCardProps {
   task: Task;
@@ -264,7 +277,7 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
       {/* New Project Modal (Nested to avoid global state mess) */}
       <Dialog open={isAddingProject} onOpenChange={setIsAddingProject}>
-        <DialogContent className="sm:max-w-[300px]">
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle className="text-sm">New Project</DialogTitle>
           </DialogHeader>

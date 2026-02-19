@@ -124,6 +124,8 @@ export const useStore = create<AppState>()(
       updateSettings: (updates) => set((state) => ({
         settings: { ...state.settings, ...updates }
       })),
+
+      toggleTheme: () => set((state) => {
         const newTheme = state.theme === 'dark' ? 'light' : 'dark';
         if (newTheme === 'dark') {
           document.documentElement.classList.add('dark');

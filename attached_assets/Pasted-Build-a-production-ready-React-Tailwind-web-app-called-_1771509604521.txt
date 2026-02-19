@@ -1,0 +1,269 @@
+Build a production-ready React + Tailwind web app called “Dev Status”.
+
+This is a personal, local-only Jira companion used all day to track active work and generate a daily status email.
+
+All data must persist in localStorage.
+
+No backend. No authentication.
+
+📌 Core Concept
+
+The app is a minimalist working-memory tool for a developer.
+
+It is:
+
+Fast
+
+Clean
+
+Drag-based priority
+
+Used all day
+
+Generates a plain-text email summary at end of day
+
+🗂 Data Models
+Task
+
+id (uuid)
+
+jiraId (required)
+
+title (required)
+
+status (dropdown)
+
+Not Started (default)
+
+In Progress
+
+Completed
+
+Suspended
+
+note (plain text, auto-save)
+
+projectIds (array)
+
+archived (boolean)
+
+order (number for drag priority)
+
+Rules:
+
+When status becomes Completed or Suspended → archived = true
+
+Archived tasks are not included in email
+
+Project
+
+id
+
+name
+
+repoUrl
+
+Projects are global.
+Tasks can:
+
+Have zero projects
+
+Have multiple projects
+
+Not have duplicate project assignments
+
+🖥 Layout
+Header
+
+Left:
+
+Title: Dev Status
+
+Right:
+
+New Task button
+
+Generate Status Email button
+
+Light/Dark toggle
+
+Keyboard shortcuts:
+
+CMD + N → New Task
+
+CMD + E → Generate Status Email
+
+🔎 Search
+
+Global search bar:
+
+Matches jiraId
+
+Matches title
+
+Matches note
+
+Includes archived tasks
+
+📑 Tabs
+
+Use top tabs instead of stacked sections:
+
+Tabs:
+
+Active (default)
+
+Archived
+
+Active:
+
+Draggable
+
+Ordered by drag position
+
+Archived:
+
+Not draggable
+
+Visible always
+
+Not included in email
+
+Switching tabs should not reset search.
+
+🧱 Task Card Layout
+
+Two-line header:
+
+Line 1:
+Drag handle + small Jira ID + Large Title
+
+Right side:
+Status dropdown
+
+Line 2:
+Fixed-height textarea (scrollable, NOT auto-expanding)
+
+Placeholder:
+"Daily summary for status email..."
+
+Auto-save on every change.
+
+Below note:
+Project badges.
+
+📁 Project Assignment
+
+Inside each task:
+
+Dropdown listing all existing projects.
+
+Option: “+ Create New Project”
+
+When creating project:
+
+Require name
+
+Require repoUrl
+
+Save globally
+
+Immediately available in dropdown
+
+Selecting a project:
+
+Adds it as a badge
+
+Badge clickable → opens repoUrl in new tab
+
+Badge has small × to remove from task
+
+Prevent duplicate project assignment to a task.
+
+🎨 UI Style
+
+Minimalist
+
+Slight dev-tool aesthetic
+
+Clean spacing
+
+Subtle shadows
+
+iOS-inspired
+
+Status dropdown color accents:
+
+Not Started → Gray
+
+In Progress → Blue
+
+Completed → Green
+
+Suspended → Amber
+
+🌗 Dark / Light Mode
+
+Toggle must work correctly
+
+Apply Tailwind dark class on root html
+
+Persist theme in localStorage
+
+Default to system preference
+
+📧 Email Generator
+
+Button: Generate Status Email
+
+Behavior:
+
+Includes only ACTIVE tasks
+
+Uses drag order
+
+Plain text format:
+
+JIRA-ID Title - [Status]
+
+Example:
+
+GAZZETTA-11183 Blocco bot AI robots video.gazzetta.it - [In Progress]
+
+Open modal preview with:
+
+Text visible
+
+Auto-copy to clipboard
+
+Toast: “Status email copied to clipboard”
+
+💾 Persistence
+
+Use localStorage to persist:
+
+Tasks
+
+Projects
+
+Theme
+
+Task order
+
+Auto-save immediately on change.
+
+🚫 Do Not Include
+
+Backend
+
+Authentication
+
+Animations
+
+Time tracking
+
+Logs
+
+Jira API integration
+
+Make the app fully functional and clean.

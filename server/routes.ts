@@ -1,16 +1,18 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // No API routes needed - frontend uses localStorage.
+  // We just serve the frontend (handled by server/index.ts and vite.ts)
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get("/api/health", async (req, res) => {
+    const healthy = await storage.healthCheck();
+    res.json({ status: healthy ? "ok" : "error" });
+  });
 
   return httpServer;
 }

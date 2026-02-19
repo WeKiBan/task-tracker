@@ -58,8 +58,10 @@ const statusConfig: Record<TaskStatus, { icon: any, color: string, bg: string, b
 };
 
 export function TaskCard({ task, isOverlay }: TaskCardProps) {
-  const { updateTask, deleteTask, projects } = useStore();
-  const [isEditingNote, setIsEditingNote] = useState(false);
+  const { updateTask, deleteTask, projects, settings, addProject } = useStore();
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newRepoUrl, setNewRepoUrl] = useState("");
+  const [isAddingProject, setIsAddingProject] = useState(false);
 
   const {
     attributes,
@@ -81,139 +83,216 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
   
   const taskProjects = projects.filter(p => task.projectIds.includes(p.id));
 
+  const jiraLink = settings.jiraBaseUrl 
+    ? `${settings.jiraBaseUrl.replace(/\/$/, '')}/browse/${task.jiraId}`
+    : null;
+
+  const handleCreateProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newProjectName) {
+      const id = addProject({ name: newProjectName, repoUrl: newRepoUrl });
+      updateTask(task.id, { projectIds: [...task.projectIds, id] });
+      setNewProjectName("");
+      setNewRepoUrl("");
+      setIsAddingProject(false);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative flex flex-col gap-3 p-4 rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-200",
-        "hover:shadow-md hover:border-primary/20",
-        isDragging && "shadow-xl ring-2 ring-primary rotate-2 z-50 cursor-grabbing",
-        task.archived && "opacity-75 bg-muted/30 border-dashed"
+        "group relative flex flex-col gap-2 p-3 rounded-lg border bg-card text-card-foreground transition-all duration-200",
+        "hover:border-primary/30",
+        isDragging && "shadow-xl ring-1 ring-primary z-50 cursor-grabbing",
+        task.archived && "opacity-60 bg-muted/20 grayscale-[0.5]"
       )}
     >
-      <div className="flex items-start gap-3">
-        {/* Drag Handle - Only show if not archived */}
+      <div className="flex items-start gap-2">
         {!task.archived && (
           <button
             {...attributes}
             {...listeners}
-            className="mt-1 -ml-1 p-1 text-muted-foreground/40 hover:text-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            className="mt-1 p-1 text-muted-foreground/30 hover:text-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-3.5 w-3.5" />
           </button>
         )}
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                {task.jiraId}
-              </span>
+        <div className="flex-1 min-w-0 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
+              {jiraLink ? (
+                <a 
+                  href={jiraLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-mono text-[10px] font-bold text-primary hover:underline bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 flex items-center gap-1 shrink-0"
+                >
+                  {task.jiraId}
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              ) : (
+                <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                  {task.jiraId}
+                </span>
+              )}
+              <h3 className="font-semibold text-sm leading-tight truncate">
+                {task.title}
+              </h3>
+            </div>
+            
+            <div className="flex items-center gap-1.5 shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className={cn(
-                    "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border transition-colors hover:bg-background",
+                    "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors hover:brightness-95",
                     statusStyle.color,
                     statusStyle.bg,
                     statusStyle.border
                   )}>
-                    <StatusIcon className="w-3.5 h-3.5" />
+                    <StatusIcon className="w-3 h-3" />
                     {task.status}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-40">
                   {(Object.keys(statusConfig) as TaskStatus[]).map((status) => (
                     <DropdownMenuItem
                       key={status}
                       onClick={() => updateTask(task.id, { status })}
-                      className="gap-2"
+                      className="text-xs"
                     >
                       {status}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="text-muted-foreground/50 hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors">
-                  <MoreVertical className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Projects</DropdownMenuLabel>
-                {projects.length === 0 ? (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">No projects created</div>
-                ) : (
-                  projects.map(p => (
-                    <DropdownMenuItem
-                      key={p.id}
-                      onClick={() => {
-                        const newIds = task.projectIds.includes(p.id)
-                          ? task.projectIds.filter(id => id !== p.id)
-                          : [...task.projectIds, p.id];
-                        updateTask(task.id, { projectIds: newIds });
-                      }}
-                    >
-                      <div className={cn(
-                        "w-4 h-4 mr-2 rounded border flex items-center justify-center",
-                        task.projectIds.includes(p.id) ? "bg-primary border-primary" : "border-muted-foreground"
-                      )}>
-                        {task.projectIds.includes(p.id) && <CheckCircle2 className="w-3 h-3 text-primary-foreground" />}
-                      </div>
-                      {p.name}
-                    </DropdownMenuItem>
-                  ))
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => updateTask(task.id, { archived: !task.archived })}
-                  className="gap-2"
-                >
-                  <Archive className="h-4 w-4" />
-                  {task.archived ? "Unarchive" : "Archive"}
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => deleteTask(task.id)}
-                  className="gap-2 text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
 
-          <h3 className="font-semibold text-base leading-tight mb-2 truncate">
-            {task.title}
-          </h3>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-muted-foreground/40 hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors">
+                    <MoreVertical className="h-3.5 h-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider opacity-50">Projects</DropdownMenuLabel>
+                  <div className="max-h-40 overflow-y-auto">
+                    {projects.map(p => (
+                      <DropdownMenuItem
+                        key={p.id}
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          const newIds = task.projectIds.includes(p.id)
+                            ? task.projectIds.filter(id => id !== p.id)
+                            : [...task.projectIds, p.id];
+                          updateTask(task.id, { projectIds: newIds });
+                        }}
+                        className="text-xs"
+                      >
+                        <div className={cn(
+                          "w-3 h-3 mr-2 rounded-sm border flex items-center justify-center shrink-0",
+                          task.projectIds.includes(p.id) ? "bg-primary border-primary" : "border-muted-foreground"
+                        )}>
+                          {task.projectIds.includes(p.id) && <CheckCircle2 className="w-2.5 h-2.5 text-primary-foreground" />}
+                        </div>
+                        <span className="truncate">{p.name}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setIsAddingProject(true);
+                    }}
+                    className="text-xs font-medium text-primary"
+                  >
+                    <Plus className="w-3 h-3 mr-2" />
+                    New Project
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => updateTask(task.id, { archived: !task.archived })}
+                    className="text-xs"
+                  >
+                    <Archive className="h-3 w-3 mr-2" />
+                    {task.archived ? "Unarchive" : "Archive"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => deleteTask(task.id)}
+                    className="text-xs text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
           <Textarea
             value={task.note}
             onChange={(e) => updateTask(task.id, { note: e.target.value })}
-            placeholder="Add notes..."
-            className="min-h-[60px] resize-none text-sm bg-muted/30 border-transparent hover:bg-muted/50 focus:bg-background focus:border-input transition-colors mb-2"
+            placeholder="Daily summary..."
+            className="min-h-[44px] h-[44px] resize-none text-xs bg-muted/20 border-transparent hover:bg-muted/40 focus:bg-background focus:border-input transition-all p-2 rounded-md"
           />
 
-          {taskProjects.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {taskProjects.map(p => (
-                <Badge 
-                  key={p.id} 
-                  variant="secondary" 
-                  className="font-normal text-xs px-2 py-0 h-5 bg-background border border-border/50 text-muted-foreground"
+          <div className="flex flex-wrap gap-1">
+            {taskProjects.map(p => (
+              <Badge 
+                key={p.id} 
+                variant="outline" 
+                className="group/badge font-mono text-[9px] px-1.5 py-0 h-4 bg-background/50 border-border/40 text-muted-foreground gap-1"
+              >
+                {p.repoUrl ? (
+                  <a href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary flex items-center gap-0.5">
+                    {p.name}
+                  </a>
+                ) : p.name}
+                <button 
+                  onClick={() => updateTask(task.id, { projectIds: task.projectIds.filter(id => id !== p.id) })}
+                  className="opacity-0 group-hover/badge:opacity-100 hover:text-destructive transition-opacity"
                 >
-                  {p.name}
-                </Badge>
-              ))}
-            </div>
-          )}
+                  <Trash2 className="w-2 h-2" />
+                </button>
+              </Badge>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* New Project Modal (Nested to avoid global state mess) */}
+      <Dialog open={isAddingProject} onOpenChange={setIsAddingProject}>
+        <DialogContent className="sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle className="text-sm">New Project</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateProject} className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase">Name</Label>
+              <Input
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                className="h-8 text-xs"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase">Repo URL</Label>
+              <Input
+                value={newRepoUrl}
+                onChange={(e) => setNewRepoUrl(e.target.value)}
+                className="h-8 text-xs"
+                placeholder="https://github.com/..."
+              />
+            </div>
+            <DialogFooter>
+              <Button type="submit" size="sm" className="w-full">Create</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

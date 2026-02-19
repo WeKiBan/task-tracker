@@ -26,8 +26,16 @@ export const tasks = pgTable("tasks", {
 export const insertProjectSchema = createInsertSchema(projects);
 export const insertTaskSchema = createInsertSchema(tasks);
 
+export const settingsSchema = z.object({
+  jiraBaseUrl: z.string().url().or(z.string().length(0)),
+  emailStartText: z.string(),
+  emailEndText: z.string(),
+  setupCompleted: z.boolean().default(false),
+});
+
 // Types
 export type Project = z.infer<typeof insertProjectSchema>;
 export type Task = z.infer<typeof insertTaskSchema>;
+export type Settings = z.infer<typeof settingsSchema>;
 
 export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Suspended";

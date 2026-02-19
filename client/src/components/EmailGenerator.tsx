@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export function EmailGenerator() {
-  const { tasks } = useStore();
+  const { tasks, settings } = useStore();
   const { toast } = useToast();
 
   const generateReport = () => {
@@ -20,15 +20,17 @@ export function EmailGenerator() {
       return;
     }
 
-    const report = activeTasks.map(task => 
+    const taskLines = activeTasks.map(task => 
       `${task.jiraId} ${task.title} - [${task.status}]`
     ).join("\n");
+
+    const report = `${settings.emailStartText}\n\n${taskLines}\n\n${settings.emailEndText}`;
 
     navigator.clipboard.writeText(report);
     
     toast({
-      title: "Copied to clipboard",
-      description: `Generated report for ${activeTasks.length} active tasks.`,
+      title: "Status email copied to clipboard",
+      description: `Report includes ${activeTasks.length} active tasks.`,
     });
   };
 

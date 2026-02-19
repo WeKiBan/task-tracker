@@ -22,9 +22,17 @@ export interface Task {
   order: number;
 }
 
+export interface Settings {
+  jiraBaseUrl: string;
+  emailStartText: string;
+  emailEndText: string;
+  setupCompleted: boolean;
+}
+
 interface AppState {
   tasks: Task[];
   projects: Project[];
+  settings: Settings;
   theme: 'light' | 'dark' | 'system';
   
   // Actions
@@ -33,9 +41,10 @@ interface AppState {
   deleteTask: (id: string) => void;
   reorderTasks: (newOrder: Task[]) => void;
   
-  addProject: (project: Omit<Project, 'id'>) => void;
+  addProject: (project: Omit<Project, 'id'>) => string;
   deleteProject: (id: string) => void;
   
+  updateSettings: (updates: Partial<Settings>) => void;
   toggleTheme: () => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
 }
@@ -45,6 +54,12 @@ export const useStore = create<AppState>()(
     (set) => ({
       tasks: [],
       projects: [],
+      settings: {
+        jiraBaseUrl: '',
+        emailStartText: 'Daily Status Update:',
+        emailEndText: 'Thanks,',
+        setupCompleted: false,
+      },
       theme: 'system',
 
       addTask: (taskData) => set((state) => {
@@ -89,9 +104,13 @@ export const useStore = create<AppState>()(
 
       reorderTasks: (newOrder) => set({ tasks: newOrder }),
 
-      addProject: (projectData) => set((state) => ({
-        projects: [...state.projects, { ...projectData, id: nanoid() }],
-      })),
+      addProject: (projectData) => {
+        const id = nanoid();
+        set((state) => ({
+          projects: [...state.projects, { ...projectData, id }],
+        }));
+        return id;
+      },
 
       deleteProject: (id) => set((state) => ({
         projects: state.projects.filter((p) => p.id !== id),
@@ -102,7 +121,9 @@ export const useStore = create<AppState>()(
         }))
       })),
 
-      toggleTheme: () => set((state) => {
+      updateSettings: (updates) => set((state) => ({
+        settings: { ...state.settings, ...updates }
+      })),
         const newTheme = state.theme === 'dark' ? 'light' : 'dark';
         if (newTheme === 'dark') {
           document.documentElement.classList.add('dark');

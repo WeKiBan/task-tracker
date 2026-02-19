@@ -186,6 +186,7 @@ interface AppState {
   theme: 'light' | 'dark' | 'system';
   userId: string | null;
   isCloudLoaded: boolean;
+  isAuthReady: boolean;
   
   // Actions
   addTask: (task: AddTaskInput) => void;
@@ -198,6 +199,7 @@ interface AppState {
   deleteProject: (id: string) => void;
 
   setUserId: (uid: string | null) => void;
+  setAuthReady: (ready: boolean) => void;
   loadFromCloud: () => Promise<void>;
   resetForSignOut: () => void;
   
@@ -210,6 +212,7 @@ export const useStore = create<AppState>()(
   (set, get) => ({
       userId: null,
       isCloudLoaded: false,
+      isAuthReady: false,
       tasks: [],
       projects: [],
       settings: {
@@ -220,7 +223,9 @@ export const useStore = create<AppState>()(
       },
       theme: 'system',
 
-      setUserId: (uid) => set({ userId: uid, isCloudLoaded: false }),
+      setUserId: (uid) => set({ userId: uid, isCloudLoaded: false, isAuthReady: true }),
+
+      setAuthReady: (ready) => set({ isAuthReady: ready }),
 
       loadFromCloud: async () => {
         const uid = get().userId;
@@ -290,6 +295,7 @@ export const useStore = create<AppState>()(
           theme: 'system',
           userId: null,
           isCloudLoaded: false,
+          isAuthReady: true,
         });
         document.documentElement.classList.remove('dark');
       },

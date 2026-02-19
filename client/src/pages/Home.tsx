@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 
 export default function Home() {
-  const { tasks, addTask, reorderTasks, settings, userId, isCloudLoaded } = useStore();
+  const { tasks, addTask, reorderTasks, settings, userId, isCloudLoaded, isAuthReady, resetForSignOut } = useStore();
   const isImportFlow = new URLSearchParams(window.location.search).get("import") === "1";
   const [activeTab, setActiveTab] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
@@ -187,6 +187,14 @@ export default function Home() {
     setActiveId(null);
   }
 
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-sm text-muted-foreground">
+        {isImportFlow ? "Importing ticket..." : "Restoring your session..."}
+      </div>
+    );
+  }
+
   if (!userId) {
     return <AuthGate />;
   }
@@ -228,9 +236,14 @@ export default function Home() {
               variant="ghost"
               size="sm"
               className="h-9 px-2 text-xs"
-              onClick={() => {
+              onClick={async () => {
                 if (auth) {
-                  void signOut(auth);
+                  try {
+                    await signOut(auth);
+                    resetForSignOut();
+                  } catch (error) {
+                    console.error("Failed to sign out:", error);
+                  }
                 }
               }}
             >

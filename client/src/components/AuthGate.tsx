@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   GithubAuthProvider,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
-  onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -14,38 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function AuthGate() {
-  const { userId, setUserId, loadFromCloud, resetForSignOut } = useStore();
-  const isImportFlow = new URLSearchParams(window.location.search).get("import") === "1";
+  const { userId } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!auth) {
-      setIsCheckingAuth(false);
-      return;
-    }
-
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      try {
-        if (!user) {
-          resetForSignOut();
-          return;
-        }
-
-        setUserId(user.uid);
-        await loadFromCloud();
-      } finally {
-        setIsCheckingAuth(false);
-      }
-    });
-
-    return unsubscribe;
-  }, [loadFromCloud, resetForSignOut, setUserId]);
 
   if (!hasFirebaseConfig) {
     return (
@@ -62,14 +36,6 @@ export function AuthGate() {
 
   if (userId) {
     return null;
-  }
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-sm text-muted-foreground">
-        {isImportFlow ? "Importing ticket..." : "Restoring your session..."}
-      </div>
-    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

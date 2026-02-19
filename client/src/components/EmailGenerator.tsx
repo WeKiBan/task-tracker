@@ -20,9 +20,14 @@ export function EmailGenerator() {
       return;
     }
 
-    const taskLines = activeTasks.map(task => 
-      `${task.jiraId} ${task.title} - [${task.status}]`
-    ).join("\n");
+    const taskLines = activeTasks
+      .map((task) => {
+        const summary = task.note?.trim();
+        return summary
+          ? `${task.jiraId} ${task.title} - ${summary}`
+          : `${task.jiraId} ${task.title}`;
+      })
+      .join("\n");
 
     const report = `${settings.emailStartText}\n\n${taskLines}\n\n${settings.emailEndText}`;
 

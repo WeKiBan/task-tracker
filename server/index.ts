@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { spawn } from "child_process";
 
 const app = express();
 const httpServer = createServer(app);
@@ -31,6 +32,28 @@ export function log(message: string, source = "express") {
   });
 
   console.log(`${formattedTime} [${source}] ${message}`);
+}
+
+function openInBrowser(url: string) {
+  const commandByPlatform: Record<string, string> = {
+    darwin: "open",
+    win32: "start",
+    linux: "xdg-open",
+  };
+
+  const command = commandByPlatform[process.platform];
+  if (!command) {
+    return;
+  }
+
+  const args = process.platform === "win32" ? ["/c", "start", "", url] : [url];
+  const launcher = process.platform === "win32" ? "cmd" : command;
+
+  const child = spawn(launcher, args, {
+    stdio: "ignore",
+    detached: true,
+  });
+  child.unref();
 }
 
 app.use((req, res, next) => {
@@ -85,19 +108,38 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
+  const envPort = Number.parseInt(process.env.PORT ?? "", 10);
+  const initialPort = Number.isNaN(envPort) ? 5001 : envPort;
+
+  const listenOnPort = (port: number) => {
+    const onError = (error: NodeJS.ErrnoException) => {
+      httpServer.off("error", onError);
+
+      if (error.code === "EADDRINUSE" && Number.isNaN(envPort)) {
+        const nextPort = port + 1;
+        log(`port ${port} in use, retrying on ${nextPort}`);
+        listenOnPort(nextPort);
+        return;
+      }
+
+      throw error;
+    };
+
+    httpServer.once("error", onError);
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+      },
+      () => {
+        httpServer.off("error", onError);
+        log(`serving on port ${port}`);
+        if (process.env.OPEN_BROWSER === "true") {
+          openInBrowser(`http://127.0.0.1:${port}`);
+        }
+      },
+    );
+  };
+
+  listenOnPort(initialPort);
 })();

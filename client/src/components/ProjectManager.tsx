@@ -12,14 +12,12 @@ import { Separator } from "@/components/ui/separator";
 
 export function ProjectManager() {
   const { projects, addProject, deleteProject } = useStore();
-  const [newProjectName, setNewProjectName] = useState("");
   const [newRepoUrl, setNewRepoUrl] = useState("");
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newProjectName) {
-      addProject({ name: newProjectName, repoUrl: newRepoUrl });
-      setNewProjectName("");
+    if (newRepoUrl.trim()) {
+      addProject({ repoUrl: newRepoUrl.trim() });
       setNewRepoUrl("");
     }
   };
@@ -34,24 +32,16 @@ export function ProjectManager() {
       <PopoverContent className="w-80 p-4" align="end">
         <h4 className="font-medium mb-3">Projects</h4>
         
-        <form onSubmit={handleAdd} className="flex flex-col gap-2 mb-4">
+        <form onSubmit={handleAdd} className="flex gap-2 mb-4">
           <Input 
-            placeholder="Project Name" 
-            value={newProjectName}
-            onChange={(e) => setNewProjectName(e.target.value)}
-            className="h-8 text-sm"
+            placeholder="Repo URL" 
+            value={newRepoUrl}
+            onChange={(e) => setNewRepoUrl(e.target.value)}
+            className="h-8 text-sm flex-1"
           />
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Repo URL (Optional)" 
-              value={newRepoUrl}
-              onChange={(e) => setNewRepoUrl(e.target.value)}
-              className="h-8 text-sm flex-1"
-            />
-            <Button type="submit" size="sm" className="h-8 w-8 p-0" disabled={!newProjectName}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button type="submit" size="sm" className="h-8 w-8 p-0" disabled={!newRepoUrl.trim()}>
+            <Plus className="h-4 w-4" />
+          </Button>
         </form>
 
         <Separator className="my-2" />

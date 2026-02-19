@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Plus, ExternalLink } from "lucide-react";
+import { Settings as SettingsIcon, ExternalLink, Pencil, Save, Trash2, X } from "lucide-react";
 import { useStore } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,13 +16,31 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
-export function SettingsModal({ trigger }: { trigger?: React.ReactNode }) {
-  const { settings, updateSettings, theme, setTheme } = useStore();
-  const [open, setOpen] = useState(false);
+interface SettingsModalProps {
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showDefaultTrigger?: boolean;
+}
+
+export function SettingsModal({
+  trigger,
+  open,
+  onOpenChange,
+  showDefaultTrigger = true,
+}: SettingsModalProps) {
+  const { settings, projects, updateSettings, updateProject, deleteProject, theme, setTheme } = useStore();
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isControlled = open !== undefined;
+  const dialogOpen = isControlled ? open : internalOpen;
+  const setDialogOpen = onOpenChange ?? setInternalOpen;
   
   const [jiraUrl, setJiraUrl] = useState(settings.jiraBaseUrl);
   const [startText, setStartText] = useState(settings.emailStartText);
   const [endText, setEndText] = useState(settings.emailEndText);
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editingRepoUrl, setEditingRepoUrl] = useState("");
 
   const handleSave = () => {
     updateSettings({
@@ -31,18 +49,41 @@ export function SettingsModal({ trigger }: { trigger?: React.ReactNode }) {
       emailEndText: endText,
       setupCompleted: true,
     });
-    setOpen(false);
+    setDialogOpen(false);
+  };
+
+  const shouldRenderTrigger = trigger !== undefined || showDefaultTrigger;
+
+  const startEditProject = (projectId: string, repoUrl: string) => {
+    setEditingProjectId(projectId);
+    setEditingRepoUrl(repoUrl);
+  };
+
+  const cancelEditProject = () => {
+    setEditingProjectId(null);
+    setEditingRepoUrl("");
+  };
+
+  const saveEditProject = () => {
+    if (!editingProjectId || !editingRepoUrl.trim()) {
+      return;
+    }
+
+    updateProject(editingProjectId, { repoUrl: editingRepoUrl.trim() });
+    cancelEditProject();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <SettingsIcon className="h-4 w-4" />
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {shouldRenderTrigger && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -103,6 +144,93 @@ export function SettingsModal({ trigger }: { trigger?: React.ReactNode }) {
               ))}
             </div>
           </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <Label>Projects</Label>
+            <div className="max-h-44 overflow-y-auto space-y-2 rounded-md border p-2">
+              {projects.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-2">No projects yet.</p>
+              ) : (
+                projects.map((project) => {
+                  const isEditing = editingProjectId === project.id;
+
+                  return (
+                    <div key={project.id} className="rounded border p-2 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium truncate">{project.name}</span>
+                        <div className="flex items-center gap-1">
+                          {isEditing ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={saveEditProject}
+                                disabled={!editingRepoUrl.trim()}
+                              >
+                                <Save className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={cancelEditProject}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => startEditProject(project.id, project.repoUrl)}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  if (isEditing) cancelEditProject();
+                                  deleteProject(project.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {isEditing ? (
+                        <Input
+                          value={editingRepoUrl}
+                          onChange={(e) => setEditingRepoUrl(e.target.value)}
+                          className="h-8 text-xs"
+                          placeholder="Repo URL"
+                        />
+                      ) : (
+                        <a
+                          href={project.repoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 truncate"
+                        >
+                          {project.repoUrl}
+                          <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <Button onClick={handleSave}>Save Changes</Button>
@@ -113,22 +241,40 @@ export function SettingsModal({ trigger }: { trigger?: React.ReactNode }) {
 }
 
 export function SetupModal() {
-  const { settings } = useStore();
+  const { settings, userId, isCloudLoaded } = useStore();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const isImportFlow = new URLSearchParams(window.location.search).get("import") === "1";
+
+  if (!userId || !isCloudLoaded) return null;
+  if (isImportFlow) return null;
+
   if (settings.setupCompleted) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-card border rounded-xl shadow-2xl p-6">
-        <h2 className="text-xl font-bold mb-2">Welcome to Dev Status</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Let's get you set up with some basic configuration. You can change these anytime in settings.
-        </p>
-        <SettingsModal 
-          trigger={
-            <Button className="w-full" size="lg">Get Started</Button>
-          } 
-        />
-      </div>
-    </div>
+    <>
+      {!settingsOpen && (
+        <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-card border rounded-xl shadow-2xl p-6">
+            <h2 className="text-xl font-bold mb-2">Welcome to Dev Status</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Let's get you set up with some basic configuration. You can change these anytime in settings.
+            </p>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => setSettingsOpen(true)}
+            >
+              Get Started
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <SettingsModal
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        showDefaultTrigger={false}
+      />
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { 
   DndContext, 
   DragOverlay,
@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy 
 } from "@dnd-kit/sortable";
 import { Search } from "lucide-react";
+import { signOut } from "firebase/auth";
 
 import { useStore, type Task } from "@/hooks/use-store";
 import { TaskCard } from "@/components/TaskCard";
@@ -23,15 +24,33 @@ import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SettingsModal, SetupModal } from "@/components/SettingsModal";
 import { EmailGenerator } from "@/components/EmailGenerator";
+import { AuthGate } from "@/components/AuthGate";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/firebase";
 
 export default function Home() {
-  const { tasks, reorderTasks, settings } = useStore();
+  const { tasks, addTask, reorderTasks, settings, userId, isCloudLoaded } = useStore();
+  const isImportFlow = new URLSearchParams(window.location.search).get("import") === "1";
   const [activeTab, setActiveTab] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState("all");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isProcessingImport, setIsProcessingImport] = useState(isImportFlow);
+  const hasHandledImportRef = useRef(false);
+
+  const allTags = Array.from(new Set(tasks.flatMap((task) => task.tags || []))).sort((a, b) =>
+    a.localeCompare(b),
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -57,7 +76,14 @@ export default function Home() {
         e.preventDefault();
         const activeTasks = tasks.filter(t => !t.archived);
         if (activeTasks.length > 0) {
-          const taskLines = activeTasks.map(task => `${task.jiraId} ${task.title} - [${task.status}]`).join("\n");
+          const taskLines = activeTasks
+            .map((task) => {
+              const summary = task.note?.trim();
+              return summary
+                ? `${task.jiraId} ${task.title} - ${summary}`
+                : `${task.jiraId} ${task.title}`;
+            })
+            .join("\n");
           const report = `${settings.emailStartText}\n\n${taskLines}\n\n${settings.emailEndText}`;
           navigator.clipboard.writeText(report);
           // Toast usually requires hook inside component, 
@@ -69,17 +95,72 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [tasks, settings]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shouldImport = params.get("import") === "1";
+
+    if (!shouldImport) {
+      setIsProcessingImport(false);
+      return;
+    }
+
+    if (hasHandledImportRef.current) {
+      setIsProcessingImport(false);
+      return;
+    }
+
+    if (!userId || !isCloudLoaded) {
+      return;
+    }
+
+    hasHandledImportRef.current = true;
+
+    const jiraId = (params.get("jiraId") || "").trim();
+    const title = (params.get("title") || "").trim();
+
+    if (!jiraId || !title) {
+      window.history.replaceState({}, "", window.location.pathname);
+      setIsProcessingImport(false);
+      return;
+    }
+
+    const isDuplicate = useStore.getState().tasks.some(
+      (task) =>
+        task.jiraId.toLowerCase() === jiraId.toLowerCase() &&
+        task.title.toLowerCase() === title.toLowerCase(),
+    );
+
+    if (!isDuplicate) {
+      addTask({
+        jiraId,
+        title,
+        status: "Not Started",
+        note: "",
+        tags: ["imported"],
+        projectIds: [],
+      });
+    }
+
+    window.history.replaceState({}, "", window.location.pathname);
+    setIsProcessingImport(false);
+  }, [userId, isCloudLoaded, addTask]);
+
   // Filter tasks
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = 
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.jiraId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.note.toLowerCase().includes(searchQuery.toLowerCase());
+      task.note.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (task.tags || []).some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesTag =
+      selectedTag === "all" ||
+      (task.tags || []).some((tag) => tag.toLowerCase() === selectedTag.toLowerCase());
     
     if (activeTab === "active") {
-      return !task.archived && matchesSearch;
+      return !task.archived && matchesSearch && matchesTag;
     } else {
-      return task.archived && matchesSearch;
+      return task.archived && matchesSearch && matchesTag;
     }
   });
 
@@ -106,6 +187,26 @@ export default function Home() {
     setActiveId(null);
   }
 
+  if (!userId) {
+    return <AuthGate />;
+  }
+
+  if (!isCloudLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-sm text-muted-foreground">
+        {isImportFlow ? "Importing ticket..." : "Loading your workspace..."}
+      </div>
+    );
+  }
+
+  if (isProcessingImport) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-sm text-muted-foreground">
+        Importing ticket...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
       <SetupModal />
@@ -123,6 +224,18 @@ export default function Home() {
           <div className="flex items-center gap-1.5">
             <EmailGenerator />
             <SettingsModal />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-2 text-xs"
+              onClick={() => {
+                if (auth) {
+                  void signOut(auth);
+                }
+              }}
+            >
+              Logout
+            </Button>
             <div className="w-px h-4 bg-border mx-1" />
             <CreateTaskDialog />
           </div>
@@ -131,14 +244,30 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-1 container max-w-3xl mx-auto p-4 flex flex-col gap-4">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
-          <Input 
-            placeholder="Search tasks..." 
-            className="pl-8 h-8 text-xs bg-muted/20 border-transparent focus:bg-background transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+            <Input 
+              placeholder="Search tasks or tags..." 
+              className="pl-8 h-8 text-xs bg-muted/20 border-transparent focus:bg-background transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <Select value={selectedTag} onValueChange={setSelectedTag}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Filter by tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All tags</SelectItem>
+              {allTags.map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  #{tag}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">

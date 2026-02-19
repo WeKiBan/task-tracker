@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Status Import</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 12px;
+      width: 320px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 12px;
+      color: #555;
+    }
+
+    input,
+    button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+    }
+
+    button {
+      border: none;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #666;
+    }
+
+    .status {
+      font-size: 12px;
+      min-height: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stack">
+    <label for="jiraId">Ticket ID</label>
+    <input id="jiraId" placeholder="ABC-123" />
+
+    <label for="title">Title</label>
+    <input id="title" placeholder="Ticket title" />
+
+    <button id="importBtn">Add ticket</button>
+
+    <div id="status" class="status"></div>
+    <div class="small">Tip: open the ticket page and click “Add ticket” — details are auto-detected.</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

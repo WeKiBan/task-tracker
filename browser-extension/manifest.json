@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Dev Status Ticket Importer",
+  "description": "Scrape current ticket and add it to Dev Status.",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"]
+}

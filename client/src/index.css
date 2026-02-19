@@ -11,25 +11,25 @@
   /* iOS/macOS inspired light theme */
   --background: 210 20% 98%;
   --foreground: 220 15% 15%;
-  
+
   --card: 0 0% 100%;
   --card-foreground: 220 15% 15%;
-  
+
   --popover: 0 0% 100%;
   --popover-foreground: 220 15% 15%;
-  
+
   --primary: 220 15% 15%;
   --primary-foreground: 210 20% 98%;
-  
+
   --secondary: 210 20% 94%;
   --secondary-foreground: 220 15% 15%;
-  
+
   --muted: 210 20% 94%;
   --muted-foreground: 220 10% 45%;
-  
+
   --accent: 210 20% 94%;
   --accent-foreground: 220 15% 15%;
-  
+
   --destructive: 0 85% 60%;
   --destructive-foreground: 210 20% 98%;
 
@@ -40,8 +40,11 @@
   /* Status Colors */
   --status-gray: 220 10% 45%;
   --status-blue: 215 90% 52%;
+  --status-purple: 270 80% 55%;
+  --status-teal: 175 75% 38%;
   --status-green: 150 90% 35%;
   --status-amber: 35 90% 45%;
+  --status-red: 0 80% 56%;
 
   --radius: 0.75rem;
 }
@@ -50,28 +53,28 @@
   /* iOS/macOS inspired dark theme */
   --background: 224 10% 10%;
   --foreground: 210 20% 98%;
-  
+
   --card: 224 10% 14%;
   --card-foreground: 210 20% 98%;
-  
+
   --popover: 224 10% 14%;
   --popover-foreground: 210 20% 98%;
-  
+
   --primary: 210 20% 98%;
   --primary-foreground: 224 10% 10%;
-  
+
   --secondary: 224 10% 18%;
   --secondary-foreground: 210 20% 98%;
-  
+
   --muted: 224 10% 18%;
   --muted-foreground: 215 15% 65%;
-  
+
   --accent: 224 10% 18%;
   --accent-foreground: 210 20% 98%;
-  
+
   --destructive: 0 65% 50%;
   --destructive-foreground: 210 20% 98%;
-  
+
   --border: 224 10% 20%;
   --input: 224 10% 20%;
   --ring: 210 20% 98%;
@@ -79,19 +82,29 @@
   /* Status Colors - Dark Mode Adjustments */
   --status-gray: 215 15% 65%;
   --status-blue: 215 90% 65%;
+  --status-purple: 270 90% 70%;
+  --status-teal: 175 80% 52%;
   --status-green: 150 80% 45%;
   --status-amber: 35 90% 55%;
+  --status-red: 0 85% 66%;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/20;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply tracking-tight;
   }
 }
@@ -100,7 +113,7 @@
   .font-mono {
     font-family: var(--font-mono);
   }
-  
+
   /* Smooth transitions */
   .transition-all-smooth {
     transition-property: all;
@@ -109,27 +122,95 @@
   }
 
   /* Status Colors Utilities */
-  .text-status-gray { color: hsl(var(--status-gray)); }
-  .bg-status-gray { background-color: hsl(var(--status-gray)); }
-  .border-status-gray { border-color: hsl(var(--status-gray)); }
-  
-  .text-status-blue { color: hsl(var(--status-blue)); }
-  .bg-status-blue { background-color: hsl(var(--status-blue)); }
-  .border-status-blue { border-color: hsl(var(--status-blue)); }
-  
-  .text-status-green { color: hsl(var(--status-green)); }
-  .bg-status-green { background-color: hsl(var(--status-green)); }
-  .border-status-green { border-color: hsl(var(--status-green)); }
-  
-  .text-status-amber { color: hsl(var(--status-amber)); }
-  .bg-status-amber { background-color: hsl(var(--status-amber)); }
-  .border-status-amber { border-color: hsl(var(--status-amber)); }
+  .text-status-gray {
+    color: hsl(var(--status-gray));
+  }
+
+  .bg-status-gray {
+    background-color: hsl(var(--status-gray));
+  }
+
+  .border-status-gray {
+    border-color: hsl(var(--status-gray));
+  }
+
+  .text-status-blue {
+    color: hsl(var(--status-blue));
+  }
+
+  .bg-status-blue {
+    background-color: hsl(var(--status-blue));
+  }
+
+  .border-status-blue {
+    border-color: hsl(var(--status-blue));
+  }
+
+  .text-status-purple {
+    color: hsl(var(--status-purple));
+  }
+
+  .bg-status-purple {
+    background-color: hsl(var(--status-purple));
+  }
+
+  .border-status-purple {
+    border-color: hsl(var(--status-purple));
+  }
+
+  .text-status-teal {
+    color: hsl(var(--status-teal));
+  }
+
+  .bg-status-teal {
+    background-color: hsl(var(--status-teal));
+  }
+
+  .border-status-teal {
+    border-color: hsl(var(--status-teal));
+  }
+
+  .text-status-green {
+    color: hsl(var(--status-green));
+  }
+
+  .bg-status-green {
+    background-color: hsl(var(--status-green));
+  }
+
+  .border-status-green {
+    border-color: hsl(var(--status-green));
+  }
+
+  .text-status-amber {
+    color: hsl(var(--status-amber));
+  }
+
+  .bg-status-amber {
+    background-color: hsl(var(--status-amber));
+  }
+
+  .border-status-amber {
+    border-color: hsl(var(--status-amber));
+  }
+
+  .text-status-red {
+    color: hsl(var(--status-red));
+  }
+
+  .bg-status-red {
+    background-color: hsl(var(--status-red));
+  }
+
+  .border-status-red {
+    border-color: hsl(var(--status-red));
+  }
 
   /* Glassmorphism */
   .glass {
     @apply bg-background/80 backdrop-blur-md border border-border/50;
   }
-  
+
   .glass-card {
     @apply bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm hover:shadow-md transition-all duration-300;
   }

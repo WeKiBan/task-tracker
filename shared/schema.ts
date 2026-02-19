@@ -15,7 +15,7 @@ export const tasks = pgTable("tasks", {
   id: text("id").primaryKey(), // UUID
   jiraId: text("jira_id").notNull(),
   title: text("title").notNull(),
-  status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Completed, Suspended
+  status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Waiting for Info, In Dev, In Prod, Closed, Suspended
   note: text("note").default(""),
   projectIds: text("project_ids").array().default([]), // Array of project UUIDs
   archived: boolean("archived").default(false).notNull(),
@@ -38,4 +38,11 @@ export type Project = z.infer<typeof insertProjectSchema>;
 export type Task = z.infer<typeof insertTaskSchema>;
 export type Settings = z.infer<typeof settingsSchema>;
 
-export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Suspended";
+export type TaskStatus =
+  | "Not Started"
+  | "In Progress"
+  | "Waiting for Info"
+  | "In Dev"
+  | "In Prod"
+  | "Closed"
+  | "Suspended";

@@ -216,7 +216,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden">
       <SetupModal />
       
       {/* Header */}
@@ -256,7 +256,7 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container max-w-3xl mx-auto p-4 flex flex-col gap-4">
+      <main className="flex-1 min-h-0 container max-w-3xl mx-auto p-4 flex flex-col gap-4 overflow-hidden">
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
@@ -283,57 +283,61 @@ export default function Home() {
           </Select>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 min-h-0 flex flex-col">
           <TabsList className="h-8 p-0.5 bg-muted/30 border-none w-full max-w-[200px] mb-2">
             <TabsTrigger value="active" className="h-7 text-[10px] uppercase font-bold tracking-wider">Active</TabsTrigger>
             <TabsTrigger value="archived" className="h-7 text-[10px] uppercase font-bold tracking-wider">Archived</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="mt-0 flex-1">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext 
-                items={filteredTasks.map(t => t.id)}
-                strategy={verticalListSortingStrategy}
+          <TabsContent value="active" className="mt-0 flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full pr-1">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
               >
-                <div className="flex flex-col gap-2">
-                  {filteredTasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border border-dashed rounded-lg bg-muted/5">
-                      <p className="text-xs font-medium">No active tasks</p>
-                    </div>
-                  ) : (
-                    filteredTasks.map((task) => (
-                      <TaskCard key={task.id} task={task} />
-                    ))
-                  )}
-                </div>
-              </SortableContext>
-              <DragOverlay dropAnimation={null}>
-                {activeTask ? (
-                  <div className="w-[calc(100vw-32px)] max-w-3xl">
-                    <TaskCard task={activeTask} isOverlay />
+                <SortableContext 
+                  items={filteredTasks.map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="flex flex-col gap-2 pb-2">
+                    {filteredTasks.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border border-dashed rounded-lg bg-muted/5">
+                        <p className="text-xs font-medium">No active tasks</p>
+                      </div>
+                    ) : (
+                      filteredTasks.map((task) => (
+                        <TaskCard key={task.id} task={task} />
+                      ))
+                    )}
                   </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+                </SortableContext>
+                <DragOverlay dropAnimation={null}>
+                  {activeTask ? (
+                    <div className="w-[calc(100vw-32px)] max-w-3xl">
+                      <TaskCard task={activeTask} isOverlay />
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="archived" className="mt-0 flex-1">
-            <div className="flex flex-col gap-2 opacity-80">
-              {filteredTasks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border border-dashed rounded-lg bg-muted/5">
-                  <p className="text-xs font-medium">No archived tasks</p>
-                </div>
-              ) : (
-                filteredTasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))
-              )}
-            </div>
+          <TabsContent value="archived" className="mt-0 flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="h-full pr-1">
+              <div className="flex flex-col gap-2 opacity-80 pb-2">
+                {filteredTasks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border border-dashed rounded-lg bg-muted/5">
+                    <p className="text-xs font-medium">No archived tasks</p>
+                  </div>
+                ) : (
+                  filteredTasks.map((task) => (
+                    <TaskCard key={task.id} task={task} />
+                  ))
+                )}
+              </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </main>

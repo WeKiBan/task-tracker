@@ -222,7 +222,7 @@ export function CreateTaskDialog() {
                 id="newProjectRepo"
                 value={newRepoUrl}
                 onChange={(e) => setNewRepoUrl(e.target.value)}
-                placeholder="https://github.com/..."
+                placeholder="https://github.com/... or /Users/..."
                 required
               />
             </div>

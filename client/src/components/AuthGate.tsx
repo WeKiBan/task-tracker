@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
 } from "firebase/auth";
+import { Github } from "lucide-react";
 import { auth, hasFirebaseConfig } from "@/lib/firebase";
 import { useStore } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,27 @@ export function AuthGate() {
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+
+  const GoogleIcon = () => (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        d="M21.35 12.23c0-.72-.06-1.26-.19-1.82H12v3.47h5.38c-.11.86-.73 2.17-2.11 3.04l-.02.12 3.04 2.31.21.02c1.94-1.75 3.06-4.33 3.06-7.14Z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12 21.5c2.63 0 4.83-.85 6.44-2.31l-3.23-2.45c-.86.59-2.02 1-3.21 1-2.58 0-4.76-1.69-5.54-4.03l-.12.01-3.16 2.4-.04.11A9.74 9.74 0 0 0 12 21.5Z"
+        fill="#34A853"
+      />
+      <path
+        d="M6.46 13.71A5.85 5.85 0 0 1 6.14 12c0-.6.12-1.18.3-1.71l-.01-.12-3.2-2.44-.1.04A9.46 9.46 0 0 0 2 12c0 1.53.37 2.97 1.03 4.23l3.43-2.52Z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12 6.26c1.5 0 2.5.63 3.07 1.15l2.24-2.13C16.82 3.75 14.63 2.5 12 2.5a9.74 9.74 0 0 0-8.86 5.77l3.3 2.52C7.24 7.95 9.42 6.26 12 6.26Z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
 
   if (!hasFirebaseConfig) {
     return (
@@ -176,6 +198,7 @@ export function AuthGate() {
           onClick={handleGoogleSignIn}
           disabled={isBusy}
         >
+          <GoogleIcon />
           Continue with Google
         </Button>
 
@@ -186,6 +209,7 @@ export function AuthGate() {
           onClick={handleGithubSignIn}
           disabled={isBusy}
         >
+          <Github className="h-4 w-4" />
           Continue with GitHub
         </Button>
 

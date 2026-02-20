@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { 
@@ -15,7 +15,11 @@ import {
   ExternalLink,
   Trash2,
   Archive,
-  Plus
+  Plus,
+  Bold,
+  Italic,
+  Underline,
+  ImagePlus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore, type Subtask, type Task, type TaskStatus } from "@/hooks/use-store";
@@ -99,6 +103,77 @@ const statusConfig: Record<TaskStatus, { icon: any, color: string, bg: string, b
   },
 };
 
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+const sanitizeNoteHtml = (html: string) =>
+  html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/ on\w+=\"[^\"]*\"/gi, "")
+    .replace(/ on\w+='[^']*'/gi, "")
+    .replace(/javascript:/gi, "");
+
+const toEditorHtml = (note: string) => {
+  const trimmed = (note || "").trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const looksLikeHtml = /<[^>]+>/.test(trimmed);
+  if (looksLikeHtml) {
+    return sanitizeNoteHtml(trimmed);
+  }
+
+  return escapeHtml(note).replace(/\n/g, "<br />");
+};
+
+const readImageAsOptimizedDataUrl = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Unable to read image"));
+        return;
+      }
+
+      const originalDataUrl = reader.result;
+
+      const image = new Image();
+      image.onload = () => {
+        const maxWidth = 1400;
+        const scale = image.width > maxWidth ? maxWidth / image.width : 1;
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const context = canvas.getContext("2d");
+        if (!context) {
+          resolve(originalDataUrl);
+          return;
+        }
+
+        context.drawImage(image, 0, 0, width, height);
+        const optimized = canvas.toDataURL("image/jpeg", 0.82);
+        resolve(optimized || originalDataUrl);
+      };
+
+      image.onerror = () => resolve(originalDataUrl);
+      image.src = originalDataUrl;
+    };
+
+    reader.onerror = () => reject(new Error("Unable to read image"));
+    reader.readAsDataURL(file);
+  });
+
 export function TaskCard({ task, isOverlay }: TaskCardProps) {
   const { updateTask, deleteTask, projects, settings, addProject } = useStore();
   const [newRepoUrl, setNewRepoUrl] = useState("");
@@ -106,7 +181,41 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
+  const [selectedImageWidth, setSelectedImageWidth] = useState<number | null>(null);
   const preventReopenRef = useRef(false);
+  const personalNoteEditorRef = useRef<HTMLDivElement>(null);
+  const personalNoteImageInputRef = useRef<HTMLInputElement>(null);
+  const personalNoteDraftRef = useRef(toEditorHtml(task.personalNote || ""));
+  const lastSavedPersonalNoteRef = useRef(task.personalNote || "");
+  const personalNoteSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectedImageRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (!isTaskOpen) {
+      return;
+    }
+
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const nextValue = toEditorHtml(task.personalNote || "");
+    if (editor.innerHTML !== nextValue) {
+      editor.innerHTML = nextValue;
+    }
+
+    personalNoteDraftRef.current = nextValue;
+    lastSavedPersonalNoteRef.current = task.personalNote || "";
+  }, [isTaskOpen, task.personalNote]);
+
+  useEffect(() => {
+    return () => {
+      if (personalNoteSaveTimerRef.current) {
+        clearTimeout(personalNoteSaveTimerRef.current);
+      }
+    };
+  }, []);
 
   const suppressCardOpenTemporarily = () => {
     preventReopenRef.current = true;
@@ -145,6 +254,30 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
   const getJiraLink = (jiraId: string) =>
     settings.jiraBaseUrl ? `${settings.jiraBaseUrl.replace(/\/$/, "")}/${jiraId}` : null;
+
+  const getProjectOpenLink = (repoOrPath: string) => {
+    const trimmed = repoOrPath.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    if (trimmed.startsWith("vscode://")) {
+      return trimmed;
+    }
+
+    const localPathPattern = /^(~\/|\/|[A-Za-z]:[\\/]|\\\\)/;
+    if (localPathPattern.test(trimmed)) {
+      const normalized = trimmed.replace(/\\/g, "/");
+      return `vscode://file/${encodeURI(normalized)}`;
+    }
+
+    const gitLikeUrlPattern = /^(https?:\/\/|git@|ssh:\/\/)/i;
+    if (gitLikeUrlPattern.test(trimmed)) {
+      return `vscode://vscode.git/clone?url=${encodeURIComponent(trimmed)}`;
+    }
+
+    return trimmed;
+  };
 
   const parseSubtaskInput = (value: string) => {
     const trimmed = value.trim();
@@ -193,7 +326,10 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
   const handleTaskOpenChange = (open: boolean) => {
     if (!open) {
+      savePersonalNote();
       suppressCardOpenTemporarily();
+      selectedImageRef.current = null;
+      setSelectedImageWidth(null);
     }
 
     setIsTaskOpen(open);
@@ -242,6 +378,168 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
     updateTask(task.id, {
       tags: taskTags.filter((tag) => tag.toLowerCase() !== tagToRemove.toLowerCase()),
     });
+  };
+
+  const syncPersonalNoteFromEditor = () => {
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    const nextValue = editor.innerHTML;
+    personalNoteDraftRef.current = nextValue;
+    queuePersonalNoteSave(nextValue);
+  };
+
+  const persistPersonalNote = (rawValue: string) => {
+    const sanitized = sanitizeNoteHtml(rawValue).trim();
+    personalNoteDraftRef.current = sanitized;
+
+    if (sanitized === lastSavedPersonalNoteRef.current) {
+      return;
+    }
+
+    updateTask(task.id, { personalNote: sanitized });
+    lastSavedPersonalNoteRef.current = sanitized;
+  };
+
+  const queuePersonalNoteSave = (rawValue: string) => {
+    if (personalNoteSaveTimerRef.current) {
+      clearTimeout(personalNoteSaveTimerRef.current);
+    }
+
+    personalNoteSaveTimerRef.current = setTimeout(() => {
+      persistPersonalNote(rawValue);
+    }, 180);
+  };
+
+  const savePersonalNote = () => {
+    if (personalNoteSaveTimerRef.current) {
+      clearTimeout(personalNoteSaveTimerRef.current);
+      personalNoteSaveTimerRef.current = null;
+    }
+
+    const editor = personalNoteEditorRef.current;
+    const currentValue = editor ? editor.innerHTML : personalNoteDraftRef.current;
+    persistPersonalNote(currentValue);
+  };
+
+  const applyPersonalNoteFormat = (command: "bold" | "italic" | "underline") => {
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+    document.execCommand(command, false);
+    const nextValue = editor.innerHTML;
+    personalNoteDraftRef.current = nextValue;
+    queuePersonalNoteSave(nextValue);
+  };
+
+  const insertImageIntoPersonalNote = (dataUrl: string) => {
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+
+    editor.focus();
+    document.execCommand(
+      "insertHTML",
+      false,
+      `<img src="${dataUrl}" alt="Screenshot" style="width:100%;max-width:100%;height:auto;border-radius:8px;margin:8px 0;cursor:pointer;" />`,
+    );
+    const nextValue = editor.innerHTML;
+    personalNoteDraftRef.current = nextValue;
+    persistPersonalNote(nextValue);
+  };
+
+  const setSelectedImageSize = (widthPercent: number) => {
+    const selectedImage = selectedImageRef.current;
+    if (!selectedImage) {
+      return;
+    }
+
+    selectedImage.style.width = `${widthPercent}%`;
+    selectedImage.style.maxWidth = "100%";
+    selectedImage.style.height = "auto";
+    setSelectedImageWidth(widthPercent);
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+    const nextValue = editor.innerHTML;
+    personalNoteDraftRef.current = nextValue;
+    persistPersonalNote(nextValue);
+  };
+
+  const removeSelectedImage = () => {
+    const selectedImage = selectedImageRef.current;
+    if (!selectedImage) {
+      return;
+    }
+
+    selectedImage.remove();
+    selectedImageRef.current = null;
+    setSelectedImageWidth(null);
+    const editor = personalNoteEditorRef.current;
+    if (!editor) {
+      return;
+    }
+    const nextValue = editor.innerHTML;
+    personalNoteDraftRef.current = nextValue;
+    persistPersonalNote(nextValue);
+  };
+
+  const handlePersonalNoteEditorClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    const image = target.closest("img") as HTMLImageElement | null;
+
+    if (!image) {
+      selectedImageRef.current = null;
+      setSelectedImageWidth(null);
+      return;
+    }
+
+    selectedImageRef.current = image;
+
+    const widthValue = image.style.width;
+    const parsed = widthValue.endsWith("%") ? Number.parseFloat(widthValue) : 100;
+    setSelectedImageWidth(Number.isFinite(parsed) ? parsed : 100);
+  };
+
+  const handlePersonalNoteImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    try {
+      const optimizedDataUrl = await readImageAsOptimizedDataUrl(file);
+      insertImageIntoPersonalNote(optimizedDataUrl);
+    } catch {
+      // ignore image read errors
+    }
+
+    event.target.value = "";
+  };
+
+  const handlePersonalNotePaste = async (event: React.ClipboardEvent<HTMLDivElement>) => {
+    const files = Array.from(event.clipboardData.files || []);
+    const image = files.find((file) => file.type.startsWith("image/"));
+
+    if (!image) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      const optimizedDataUrl = await readImageAsOptimizedDataUrl(image);
+      insertImageIntoPersonalNote(optimizedDataUrl);
+    } catch {
+      // ignore image read errors
+    }
   };
 
   return (
@@ -422,7 +720,14 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
                 className="group/badge font-mono text-[9px] px-1.5 py-0 h-4 bg-background/50 border-border/40 text-muted-foreground gap-1"
               >
                 {p.repoUrl ? (
-                  <a data-no-open-task="true" href={p.repoUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary flex items-center gap-0.5">
+                  <a
+                    data-no-open-task="true"
+                    href={getProjectOpenLink(p.repoUrl) || p.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary flex items-center gap-0.5"
+                    title="Open project in VS Code"
+                  >
                     {p.name}
                   </a>
                 ) : p.name}
@@ -475,12 +780,94 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
             <div className="space-y-1">
               <Label className="text-[10px] uppercase">Personal Notes (not included in email)</Label>
-              <Textarea
-                value={task.personalNote || ""}
-                onChange={(e) => updateTask(task.id, { personalNote: e.target.value })}
-                className="min-h-[90px] text-sm"
-                placeholder="Private notes, reminders, links, etc."
-              />
+              <div className="rounded-md border bg-background">
+                <div className="flex items-center gap-1 border-b p-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => applyPersonalNoteFormat("bold")}
+                  >
+                    <Bold className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => applyPersonalNoteFormat("italic")}
+                  >
+                    <Italic className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => applyPersonalNoteFormat("underline")}
+                  >
+                    <Underline className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => personalNoteImageInputRef.current?.click()}
+                  >
+                    <ImagePlus className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="ml-1 text-[10px] text-muted-foreground">Paste screenshots or upload image</span>
+                </div>
+
+                <div
+                  ref={personalNoteEditorRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={syncPersonalNoteFromEditor}
+                  onBlur={savePersonalNote}
+                  onPaste={handlePersonalNotePaste}
+                  onClick={handlePersonalNoteEditorClick}
+                  data-placeholder="Private notes, reminders, links, screenshots..."
+                  className="min-h-[140px] p-3 text-sm outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/70 [&_img]:max-w-full [&_img]:rounded-md [&_img]:my-2 [&_strong]:font-semibold [&_em]:italic [&_u]:underline"
+                />
+
+                {selectedImageWidth !== null && (
+                  <div className="flex items-center gap-1 border-t p-2">
+                    <span className="text-[10px] text-muted-foreground mr-1">Image size</span>
+                    {[25, 50, 75, 100].map((size) => (
+                      <Button
+                        key={size}
+                        type="button"
+                        variant={selectedImageWidth === size ? "default" : "outline"}
+                        size="sm"
+                        className="h-6 px-2 text-[10px]"
+                        onClick={() => setSelectedImageSize(size)}
+                      >
+                        {size}%
+                      </Button>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-[10px] text-destructive"
+                      onClick={removeSelectedImage}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+
+                <input
+                  ref={personalNoteImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePersonalNoteImageSelect}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -586,7 +973,7 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
                 value={newRepoUrl}
                 onChange={(e) => setNewRepoUrl(e.target.value)}
                 className="h-8 text-xs"
-                placeholder="https://github.com/..."
+                placeholder="https://github.com/... or /Users/..."
                 required
               />
             </div>

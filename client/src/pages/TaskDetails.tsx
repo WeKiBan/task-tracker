@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useRoute } from "wouter";
-import { motion } from "framer-motion";
 import { ArrowLeft, Bold, Italic, Underline, List, Trash2, ExternalLink, Check } from "lucide-react";
 import { nanoid } from "nanoid";
 
@@ -442,12 +441,7 @@ export default function TaskDetails() {
   };
 
   return (
-    <motion.main
-      initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="min-h-screen bg-background text-foreground"
-    >
+    <main className="min-h-screen bg-background text-foreground">
       <div className="container max-w-3xl mx-auto p-4 space-y-4">
         <div className="flex items-center justify-between">
           <Button variant="outline" size="sm" onClick={() => setLocation("/")}> 
@@ -765,6 +759,6 @@ export default function TaskDetails() {
 
         </div>
       </div>
-    </motion.main>
+    </main>
   );
 }

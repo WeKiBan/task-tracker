@@ -15,14 +15,15 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Search, Puzzle } from "lucide-react";
+import { Search, Puzzle, Settings as SettingsIcon } from "lucide-react";
 import { signOut } from "firebase/auth";
+import { useLocation } from "wouter";
 
 import { useStore, type Task, type TaskStatus } from "@/hooks/use-store";
 import { useToast } from "@/hooks/use-toast";
 import { TaskCard } from "@/components/TaskCard";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
-import { SettingsModal, SetupModal } from "@/components/SettingsModal";
+import { SetupGate } from "@/components/SettingsForm";
 import { EmailGenerator } from "@/components/EmailGenerator";
 import { AuthGate } from "@/components/AuthGate";
 import { Input } from "@/components/ui/input";
@@ -138,6 +139,7 @@ const clearPendingImport = () => {
 };
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const {
     tasks,
     addTask,
@@ -511,7 +513,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-      <SetupModal />
+      <SetupGate />
 
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container max-w-3xl mx-auto h-12 flex items-center justify-between px-4">
@@ -533,7 +535,15 @@ export default function Home() {
               Add Extension
             </Button>
             <EmailGenerator />
-            <SettingsModal />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setLocation("/settings")}
+              aria-label="Open settings page"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"

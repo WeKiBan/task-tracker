@@ -347,7 +347,7 @@ export default function Home() {
         title,
         status: "Not Started",
         note: "",
-        tags: ["imported"],
+        tags: [],
         projectIds: [],
       });
       toast({ title: `Imported ${jiraId}` });

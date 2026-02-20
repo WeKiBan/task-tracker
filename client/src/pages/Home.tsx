@@ -68,7 +68,74 @@ const STATUSES: TaskStatus[] = [
 ];
 
 const todayIsoDate = () => new Date().toISOString().slice(0, 10);
-const CHROME_WEB_STORE_URL = "";
+const EXTENSION_ZIP_URL = "/extensions/task-pilot.zip";
+const PENDING_IMPORT_STORAGE_KEY = "task-pilot:pending-import";
+const INSTALL_GUIDE_STEPS = [
+  "Open chrome://extensions and turn on Developer mode (top-right).",
+  "Unzip the downloaded task-pilot.zip file on your computer.",
+  "Click Load unpacked and select the unzipped extension folder.",
+  "Pin the extension from the puzzle icon, open a ticket page, and click Add ticket.",
+];
+
+type PendingImportPayload = {
+  jiraId: string;
+  title: string;
+  sourceUrl?: string;
+};
+
+const readPendingImport = (): PendingImportPayload | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(PENDING_IMPORT_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<PendingImportPayload>;
+    const jiraId = String(parsed.jiraId || "").trim();
+    const title = String(parsed.title || "").trim();
+    const sourceUrl = String(parsed.sourceUrl || "").trim();
+
+    if (!jiraId) {
+      return null;
+    }
+
+    return {
+      jiraId,
+      title,
+      sourceUrl,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const writePendingImport = (payload: PendingImportPayload) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.sessionStorage.setItem(PENDING_IMPORT_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // ignore storage failures
+  }
+};
+
+const clearPendingImport = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.sessionStorage.removeItem(PENDING_IMPORT_STORAGE_KEY);
+  } catch {
+    // ignore storage failures
+  }
+};
 
 export default function Home() {
   const {
@@ -105,6 +172,8 @@ export default function Home() {
 
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isExtensionDialogOpen, setIsExtensionDialogOpen] = useState(false);
+  const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
+  const [installGuideStep, setInstallGuideStep] = useState(0);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
@@ -212,10 +281,32 @@ export default function Home() {
   }, [selectionMode, isCommandOpen, toast]);
 
   useEffect(() => {
+    if (!isExtensionDialogOpen) {
+      setIsInstallGuideOpen(false);
+      setInstallGuideStep(0);
+    }
+  }, [isExtensionDialogOpen]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shouldImport = params.get("import") === "1";
+    const pendingImport = readPendingImport();
 
-    if (!shouldImport) {
+    if (shouldImport) {
+      const jiraIdFromUrl = (params.get("jiraId") || "").trim();
+      const titleFromUrl = (params.get("title") || "").trim();
+      const sourceUrlFromUrl = (params.get("sourceUrl") || "").trim();
+
+      if (jiraIdFromUrl) {
+        writePendingImport({
+          jiraId: jiraIdFromUrl,
+          title: titleFromUrl,
+          sourceUrl: sourceUrlFromUrl,
+        });
+      }
+    }
+
+    if (!shouldImport && !pendingImport) {
       setIsProcessingImport(false);
       return;
     }
@@ -231,19 +322,28 @@ export default function Home() {
 
     hasHandledImportRef.current = true;
 
-    const jiraId = (params.get("jiraId") || "").trim();
-    const title = (params.get("title") || "").trim();
+    const jiraIdFromUrl = (params.get("jiraId") || "").trim();
+    const titleFromUrl = (params.get("title") || "").trim();
 
-    if (!jiraId || !title) {
+    const resolvedPending = readPendingImport();
+    const jiraId = (jiraIdFromUrl || resolvedPending?.jiraId || "").trim();
+    const title = (titleFromUrl || resolvedPending?.title || jiraId).trim();
+
+    if (!jiraId) {
+      clearPendingImport();
       window.history.replaceState({}, "", window.location.pathname);
       setIsProcessingImport(false);
+      toast({
+        title: "Import failed",
+        description: "Ticket ID was missing from the import payload.",
+        variant: "destructive",
+      });
       return;
     }
 
     const isDuplicate = useStore.getState().tasks.some(
       (task) =>
-        task.jiraId.toLowerCase() === jiraId.toLowerCase() &&
-        task.title.toLowerCase() === title.toLowerCase(),
+        task.jiraId.toLowerCase() === jiraId.toLowerCase(),
     );
 
     if (!isDuplicate) {
@@ -255,11 +355,18 @@ export default function Home() {
         tags: ["imported"],
         projectIds: [],
       });
+      toast({ title: `Imported ${jiraId}` });
+    } else {
+      toast({
+        title: `${jiraId} already exists`,
+        description: "Skipped creating a duplicate task.",
+      });
     }
 
+    clearPendingImport();
     window.history.replaceState({}, "", window.location.pathname);
     setIsProcessingImport(false);
-  }, [userId, isCloudLoaded, addTask]);
+  }, [userId, isCloudLoaded, addTask, toast]);
 
   const filteredTasks = tasks.filter((task) => {
     const matchesSearch =
@@ -631,47 +738,39 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle>Add Browser Extension</DialogTitle>
             <DialogDescription>
-              Use Chrome Web Store for one-click install, or load the local developer extension.
+              Download the extension from this site and install it in Chrome.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="rounded-md border p-3 space-y-2">
-              <p className="text-xs font-semibold">Option 1 — Chrome Web Store (recommended)</p>
+              <p className="text-xs font-semibold">Step 1 — Download extension ZIP</p>
               <p className="text-xs text-muted-foreground">
-                One-click install and auto-updates. Publish once, then installs are simple for everyone.
+                Download the packaged extension directly from this site.
               </p>
               <Button
                 type="button"
                 className="h-8 text-xs"
                 onClick={() => {
-                  if (!CHROME_WEB_STORE_URL) {
-                    toast({
-                      title: "Web Store URL not configured",
-                      description: "Set your extension listing URL in Home before using this option.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-
-                  window.open(CHROME_WEB_STORE_URL, "_blank", "noopener,noreferrer");
-                  setIsExtensionDialogOpen(false);
+                  window.open(EXTENSION_ZIP_URL, "_blank", "noopener,noreferrer");
                 }}
               >
-                Open Chrome Web Store
+                Download Extension ZIP
               </Button>
             </div>
 
             <div className="rounded-md border p-3 space-y-2">
-              <p className="text-xs font-semibold">Option 2 — Local developer extension</p>
+              <p className="text-xs font-semibold">Step 2 — Install in Chrome</p>
               <p className="text-xs text-muted-foreground">
-                Opens your extension folder and Chrome extensions page for Load unpacked.
+                Open the extensions page and follow the guided manual install.
               </p>
               <Button
                 type="button"
                 variant="outline"
                 className="h-8 text-xs"
                 onClick={async () => {
+                  window.open("chrome://extensions", "_blank", "noopener,noreferrer");
+
                   try {
                     const response = await fetch("/api/open-browser-extension-folder", { method: "POST" });
                     const payload = (await response.json().catch(() => ({}))) as { message?: string; path?: string };
@@ -686,25 +785,65 @@ export default function Home() {
                     }
 
                     void navigator.clipboard.writeText(payload.path || "browser-extension");
-                    window.open("chrome://extensions", "_blank", "noopener,noreferrer");
-
-                    toast({
-                      title: "Load unpacked in Chrome",
-                      description: "Enable Developer mode, click Load unpacked, and select the opened browser-extension folder.",
-                    });
-                    setIsExtensionDialogOpen(false);
+                    setInstallGuideStep(0);
+                    setIsInstallGuideOpen(true);
                   } catch {
                     toast({
-                      title: "Could not start extension install",
-                      description: "Open chrome://extensions and load the browser-extension folder manually.",
+                      title: "Could not prepare install helper",
+                      description: "Open chrome://extensions and install manually from the downloaded ZIP.",
                       variant: "destructive",
                     });
+                    setInstallGuideStep(0);
+                    setIsInstallGuideOpen(true);
                   }
                 }}
               >
-                Open Local Install Flow
+                Run Install Helper
               </Button>
             </div>
+
+            {isInstallGuideOpen && (
+              <div className="rounded-md border p-3 space-y-3 bg-muted/20">
+                <p className="text-xs font-semibold">
+                  Guided install ({installGuideStep + 1}/{INSTALL_GUIDE_STEPS.length})
+                </p>
+                <p className="text-xs text-muted-foreground">{INSTALL_GUIDE_STEPS[installGuideStep]}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => setInstallGuideStep((current) => Math.max(0, current - 1))}
+                    disabled={installGuideStep === 0}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => setInstallGuideStep((current) => Math.min(INSTALL_GUIDE_STEPS.length - 1, current + 1))}
+                    disabled={installGuideStep === INSTALL_GUIDE_STEPS.length - 1}
+                  >
+                    Next
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={() => {
+                      setIsInstallGuideOpen(false);
+                      setInstallGuideStep(0);
+                    }}
+                  >
+                    Close Guide
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

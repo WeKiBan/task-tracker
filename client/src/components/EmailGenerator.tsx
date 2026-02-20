@@ -2,6 +2,7 @@ import { Copy, Mail } from "lucide-react";
 import { useStore } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { buildStatusEmailReport } from "@/lib/email";
 
 export function EmailGenerator() {
   const { tasks, settings } = useStore();
@@ -20,16 +21,7 @@ export function EmailGenerator() {
       return;
     }
 
-    const taskLines = activeTasks
-      .map((task) => {
-        const summary = task.note?.trim();
-        return summary
-          ? `${task.jiraId} ${task.title} - ${summary}`
-          : `${task.jiraId} ${task.title}`;
-      })
-      .join("\n");
-
-    const report = `${settings.emailStartText}\n\n${taskLines}\n\n${settings.emailEndText}`;
+    const report = buildStatusEmailReport(activeTasks, settings);
 
     navigator.clipboard.writeText(report);
     

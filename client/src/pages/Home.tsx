@@ -37,6 +37,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ToastAction } from "@/components/ui/toast";
+import { buildStatusEmailReport } from "@/lib/email";
 import {
   CommandDialog,
   CommandInput,
@@ -227,15 +228,7 @@ export default function Home() {
         event.preventDefault();
         const activeTasks = tasks.filter((task) => !task.archived);
         if (activeTasks.length > 0) {
-          const taskLines = activeTasks
-            .map((task) => {
-              const summary = task.note?.trim();
-              return summary
-                ? `${task.jiraId} ${task.title} - ${summary}`
-                : `${task.jiraId} ${task.title}`;
-            })
-            .join("\n");
-          const report = `${settings.emailStartText}\n\n${taskLines}\n\n${settings.emailEndText}`;
+          const report = buildStatusEmailReport(activeTasks, settings);
           navigator.clipboard.writeText(report);
           toast({ title: "Email summary copied" });
         } else {

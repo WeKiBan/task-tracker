@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { FolderGit2, Plus, Trash2, ExternalLink } from "lucide-react";
-import { useStore } from "@/hooks/use-store";
+import { FolderGit2, Plus, Trash2 } from "lucide-react";
+import { useStore, isLocalProjectPath, normalizeProjectUrlKey } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,6 +17,21 @@ export function ProjectManager() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRepoUrl.trim()) {
+      if (!isLocalProjectPath(newRepoUrl)) {
+        window.alert("Please provide a local folder path (for example: /Users/you/project).");
+        return;
+      }
+
+      const normalizedNewProject = normalizeProjectUrlKey(newRepoUrl);
+      const existingProject = projects.find(
+        (project) => normalizeProjectUrlKey(project.repoUrl) === normalizedNewProject,
+      );
+
+      if (existingProject) {
+        window.alert("Project already exists.");
+        return;
+      }
+
       addProject({ repoUrl: newRepoUrl.trim() });
       setNewRepoUrl("");
     }
@@ -34,7 +49,7 @@ export function ProjectManager() {
         
         <form onSubmit={handleAdd} className="flex gap-2 mb-4">
           <Input 
-            placeholder="Repo URL" 
+            placeholder="/Users/..." 
             value={newRepoUrl}
             onChange={(e) => setNewRepoUrl(e.target.value)}
             className="h-8 text-sm flex-1"
@@ -57,14 +72,7 @@ export function ProjectManager() {
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-sm font-medium truncate">{project.name}</span>
                   {project.repoUrl && (
-                    <a 
-                      href={project.repoUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 truncate"
-                    >
-                      Repo <ExternalLink className="h-2 w-2" />
-                    </a>
+                    <span className="text-[10px] text-muted-foreground truncate">{project.repoUrl}</span>
                   )}
                 </div>
                 <Button

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useLocation } from "wouter";
 import { 
   GripVertical, 
   CheckCircle2, 
@@ -15,41 +16,45 @@ import {
   ExternalLink,
   Trash2,
   Archive,
-  Plus,
   Bold,
   Italic,
-  Underline,
-  ImagePlus
+  Underline
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useStore, type Subtask, type Task, type TaskStatus } from "@/hooks/use-store";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useStore, isLocalProjectPath, normalizeProjectUrlKey, type Task, type TaskStatus } from "@/hooks/use-store";
+import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { ToastAction } from "@/components/ui/toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
 interface TaskCardProps {
   task: Task;
   isOverlay?: boolean;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (taskId: string) => void;
 }
+
+const PROJECT_SELECT_NONE = "__none__";
+const PROJECT_SELECT_ADD_NEW = "__add_new__";
 
 const statusConfig: Record<TaskStatus, { icon: any, color: string, bg: string, border: string, accent: string }> = {
   "Not Started": { 
@@ -132,63 +137,23 @@ const toEditorHtml = (note: string) => {
   return escapeHtml(note).replace(/\n/g, "<br />");
 };
 
-const readImageAsOptimizedDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result !== "string") {
-        reject(new Error("Unable to read image"));
-        return;
-      }
-
-      const originalDataUrl = reader.result;
-
-      const image = new Image();
-      image.onload = () => {
-        const maxWidth = 1400;
-        const scale = image.width > maxWidth ? maxWidth / image.width : 1;
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-
-        const context = canvas.getContext("2d");
-        if (!context) {
-          resolve(originalDataUrl);
-          return;
-        }
-
-        context.drawImage(image, 0, 0, width, height);
-        const optimized = canvas.toDataURL("image/jpeg", 0.82);
-        resolve(optimized || originalDataUrl);
-      };
-
-      image.onerror = () => resolve(originalDataUrl);
-      image.src = originalDataUrl;
-    };
-
-    reader.onerror = () => reject(new Error("Unable to read image"));
-    reader.readAsDataURL(file);
-  });
-
-export function TaskCard({ task, isOverlay }: TaskCardProps) {
+export function TaskCard({ task, isOverlay, selectionMode = false, isSelected = false, onToggleSelect }: TaskCardProps) {
   const { updateTask, deleteTask, projects, settings, addProject } = useStore();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [newRepoUrl, setNewRepoUrl] = useState("");
   const [newTagInput, setNewTagInput] = useState("");
   const [isAddingProject, setIsAddingProject] = useState(false);
+  const [selectedProjectToAdd, setSelectedProjectToAdd] = useState(PROJECT_SELECT_NONE);
   const [isTaskOpen, setIsTaskOpen] = useState(false);
-  const [newSubtaskInput, setNewSubtaskInput] = useState("");
-  const [selectedImageWidth, setSelectedImageWidth] = useState<number | null>(null);
+  const [isPickingProjectFolder, setIsPickingProjectFolder] = useState(false);
+  const [isGeneratingProjectComment, setIsGeneratingProjectComment] = useState(false);
+  const [generatedProjectComment, setGeneratedProjectComment] = useState("");
   const preventReopenRef = useRef(false);
   const personalNoteEditorRef = useRef<HTMLDivElement>(null);
-  const personalNoteImageInputRef = useRef<HTMLInputElement>(null);
   const personalNoteDraftRef = useRef(toEditorHtml(task.personalNote || ""));
   const lastSavedPersonalNoteRef = useRef(task.personalNote || "");
   const personalNoteSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const selectedImageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if (!isTaskOpen) {
@@ -255,50 +220,84 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
   const getJiraLink = (jiraId: string) =>
     settings.jiraBaseUrl ? `${settings.jiraBaseUrl.replace(/\/$/, "")}/${jiraId}` : null;
 
-  const getProjectOpenLink = (repoOrPath: string) => {
-    const trimmed = repoOrPath.trim();
-    if (!trimmed) {
-      return null;
-    }
+  const pickProjectFolder = async () => {
+    setIsPickingProjectFolder(true);
+    try {
+      const response = await fetch("/api/pick-project-folder");
+      const payload = (await response.json().catch(() => ({}))) as { path?: string; message?: string; detail?: string };
 
-    if (trimmed.startsWith("vscode://")) {
-      return trimmed;
-    }
+      if (!response.ok) {
+        window.alert(payload.message || "Unable to open folder picker. You can paste a local path manually.");
+        return;
+      }
 
-    const localPathPattern = /^(~\/|\/|[A-Za-z]:[\\/]|\\\\)/;
-    if (localPathPattern.test(trimmed)) {
-      const normalized = trimmed.replace(/\\/g, "/");
-      return `vscode://file/${encodeURI(normalized)}`;
-    }
+      if (payload.path) {
+        setNewRepoUrl(payload.path);
+        setIsAddingProject(true);
+        return;
+      }
 
-    const gitLikeUrlPattern = /^(https?:\/\/|git@|ssh:\/\/)/i;
-    if (gitLikeUrlPattern.test(trimmed)) {
-      return `vscode://vscode.git/clone?url=${encodeURIComponent(trimmed)}`;
+      window.alert("No folder was selected.");
+    } catch {
+      window.alert("Folder picker is unavailable here. Run the app locally and try again, or paste a local path manually.");
+    } finally {
+      setIsPickingProjectFolder(false);
     }
-
-    return trimmed;
   };
 
-  const parseSubtaskInput = (value: string) => {
-    const trimmed = value.trim();
+  const openProjectInEditor = async (target: string) => {
+    const trimmed = target.trim();
     if (!trimmed) {
-      return null;
+      return;
     }
 
-    const [firstToken, ...restTokens] = trimmed.split(/\s+/);
-    const jiraId = firstToken || "";
-    const title = restTokens.join(" ").trim() || firstToken || "";
+    if (isLocalProjectPath(trimmed)) {
+      try {
+        const response = await fetch("/api/open-project-in-vscode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ target: trimmed }),
+        });
 
-    if (!jiraId || !title) {
-      return null;
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => ({}))) as { message?: string };
+          window.alert(payload.message || "Unable to open project in a new VS Code window.");
+        }
+      } catch {
+        window.alert("Unable to open project in a new VS Code window.");
+      }
+      return;
     }
 
-    return { jiraId, title };
+    window.alert("Only local machine project paths are supported.");
   };
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRepoUrl.trim()) {
+      if (!isLocalProjectPath(newRepoUrl)) {
+        window.alert("Please provide a local folder path (for example: /Users/you/project).");
+        return;
+      }
+
+      const normalizedNewProject = normalizeProjectUrlKey(newRepoUrl);
+      const existingProject = projects.find(
+        (project) => normalizeProjectUrlKey(project.repoUrl) === normalizedNewProject,
+      );
+
+      if (existingProject) {
+        if (!task.projectIds.includes(existingProject.id)) {
+          updateTask(task.id, { projectIds: [...task.projectIds, existingProject.id] });
+        }
+        setSelectedProjectToAdd(existingProject.id);
+        setNewRepoUrl("");
+        setIsAddingProject(false);
+        window.alert("Project already exists. Selected the existing project instead.");
+        return;
+      }
+
       const id = addProject({ repoUrl: newRepoUrl.trim() });
       if (id && !task.projectIds.includes(id)) {
         updateTask(task.id, { projectIds: [...task.projectIds, id] });
@@ -308,12 +307,94 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
     }
   };
 
+  const toggleTaskProject = (projectId: string) => {
+    const newIds = task.projectIds.includes(projectId)
+      ? task.projectIds.filter((id) => id !== projectId)
+      : [...task.projectIds, projectId];
+
+    updateTask(task.id, { projectIds: newIds });
+  };
+
+  const handleProjectSelectInTask = (value: string) => {
+    setSelectedProjectToAdd(value);
+
+    if (value === PROJECT_SELECT_ADD_NEW) {
+      setIsAddingProject(true);
+      return;
+    }
+
+    if (value === PROJECT_SELECT_NONE) {
+      setIsAddingProject(false);
+      return;
+    }
+
+    if (!task.projectIds.includes(value)) {
+      updateTask(task.id, { projectIds: [...task.projectIds, value] });
+    }
+
+    setIsAddingProject(false);
+    setSelectedProjectToAdd(PROJECT_SELECT_NONE);
+  };
+
+  const generateProjectComment = async () => {
+    if (taskProjects.length === 0) {
+      setGeneratedProjectComment("Projects modified:\n\nNo projects assigned.");
+      return;
+    }
+
+    setIsGeneratingProjectComment(true);
+    try {
+      const response = await fetch("/api/projects/generate-comment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projects: taskProjects.map((project) => ({
+            name: project.name,
+            repoUrl: project.repoUrl,
+          })),
+        }),
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        setGeneratedProjectComment(
+          "Generate Comment API is unavailable. Restart the local dev server and try again.",
+        );
+        return;
+      }
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        comment?: string;
+        message?: string;
+      };
+
+      if (!response.ok) {
+        setGeneratedProjectComment(payload.message || "Unable to generate comment.");
+        return;
+      }
+
+      setGeneratedProjectComment(payload.comment || "Projects modified:\n\nNo data generated.");
+    } catch {
+      setGeneratedProjectComment("Unable to generate comment. Run the app locally and try again.");
+    } finally {
+      setIsGeneratingProjectComment(false);
+    }
+  };
+
   const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (isOverlay) {
       return;
     }
 
-    if (preventReopenRef.current || isTaskOpen) {
+    if (preventReopenRef.current) {
+      return;
+    }
+
+    if (selectionMode) {
+      event.preventDefault();
+      onToggleSelect?.(task.id);
       return;
     }
 
@@ -321,41 +402,16 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
     if (target.closest("[data-no-open-task='true']")) {
       return;
     }
-    setIsTaskOpen(true);
+    setLocation(`/task/${task.id}`);
   };
 
   const handleTaskOpenChange = (open: boolean) => {
     if (!open) {
       savePersonalNote();
       suppressCardOpenTemporarily();
-      selectedImageRef.current = null;
-      setSelectedImageWidth(null);
     }
 
     setIsTaskOpen(open);
-  };
-
-  const handleAddSubtask = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = parseSubtaskInput(newSubtaskInput);
-    if (!parsed) {
-      return;
-    }
-
-    const subtask: Subtask = {
-      id: crypto.randomUUID(),
-      jiraId: parsed.jiraId,
-      title: parsed.title,
-    };
-
-    updateTask(task.id, { subtasks: [...task.subtasks, subtask] });
-    setNewSubtaskInput("");
-  };
-
-  const removeSubtask = (subtaskId: string) => {
-    updateTask(task.id, {
-      subtasks: task.subtasks.filter((subtask) => subtask.id !== subtaskId),
-    });
   };
 
   const addTag = (e: React.FormEvent) => {
@@ -437,111 +493,6 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
     queuePersonalNoteSave(nextValue);
   };
 
-  const insertImageIntoPersonalNote = (dataUrl: string) => {
-    const editor = personalNoteEditorRef.current;
-    if (!editor) {
-      return;
-    }
-
-    editor.focus();
-    document.execCommand(
-      "insertHTML",
-      false,
-      `<img src="${dataUrl}" alt="Screenshot" style="width:100%;max-width:100%;height:auto;border-radius:8px;margin:8px 0;cursor:pointer;" />`,
-    );
-    const nextValue = editor.innerHTML;
-    personalNoteDraftRef.current = nextValue;
-    persistPersonalNote(nextValue);
-  };
-
-  const setSelectedImageSize = (widthPercent: number) => {
-    const selectedImage = selectedImageRef.current;
-    if (!selectedImage) {
-      return;
-    }
-
-    selectedImage.style.width = `${widthPercent}%`;
-    selectedImage.style.maxWidth = "100%";
-    selectedImage.style.height = "auto";
-    setSelectedImageWidth(widthPercent);
-    const editor = personalNoteEditorRef.current;
-    if (!editor) {
-      return;
-    }
-    const nextValue = editor.innerHTML;
-    personalNoteDraftRef.current = nextValue;
-    persistPersonalNote(nextValue);
-  };
-
-  const removeSelectedImage = () => {
-    const selectedImage = selectedImageRef.current;
-    if (!selectedImage) {
-      return;
-    }
-
-    selectedImage.remove();
-    selectedImageRef.current = null;
-    setSelectedImageWidth(null);
-    const editor = personalNoteEditorRef.current;
-    if (!editor) {
-      return;
-    }
-    const nextValue = editor.innerHTML;
-    personalNoteDraftRef.current = nextValue;
-    persistPersonalNote(nextValue);
-  };
-
-  const handlePersonalNoteEditorClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-    const image = target.closest("img") as HTMLImageElement | null;
-
-    if (!image) {
-      selectedImageRef.current = null;
-      setSelectedImageWidth(null);
-      return;
-    }
-
-    selectedImageRef.current = image;
-
-    const widthValue = image.style.width;
-    const parsed = widthValue.endsWith("%") ? Number.parseFloat(widthValue) : 100;
-    setSelectedImageWidth(Number.isFinite(parsed) ? parsed : 100);
-  };
-
-  const handlePersonalNoteImageSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !file.type.startsWith("image/")) {
-      return;
-    }
-
-    try {
-      const optimizedDataUrl = await readImageAsOptimizedDataUrl(file);
-      insertImageIntoPersonalNote(optimizedDataUrl);
-    } catch {
-      // ignore image read errors
-    }
-
-    event.target.value = "";
-  };
-
-  const handlePersonalNotePaste = async (event: React.ClipboardEvent<HTMLDivElement>) => {
-    const files = Array.from(event.clipboardData.files || []);
-    const image = files.find((file) => file.type.startsWith("image/"));
-
-    if (!image) {
-      return;
-    }
-
-    event.preventDefault();
-
-    try {
-      const optimizedDataUrl = await readImageAsOptimizedDataUrl(image);
-      insertImageIntoPersonalNote(optimizedDataUrl);
-    } catch {
-      // ignore image read errors
-    }
-  };
-
   return (
     <div
       ref={setNodeRef}
@@ -551,6 +502,9 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
         "group relative overflow-hidden flex flex-col gap-2 p-3 rounded-lg border bg-card text-card-foreground transition-all duration-200 cursor-pointer",
         "hover:border-primary/30",
         "hover:shadow-md hover:-translate-y-[1px]",
+        selectionMode && "select-none",
+        selectionMode && isSelected && "ring-2 ring-primary border-primary/60 bg-primary/5",
+        selectionMode && "[&_button]:pointer-events-none [&_a]:pointer-events-none [&_textarea]:pointer-events-none",
         isDragging && "shadow-xl ring-1 ring-primary z-50 cursor-grabbing",
         task.archived && "opacity-60 bg-muted/20 grayscale-[0.5]"
       )}
@@ -566,14 +520,26 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
       <div className="flex items-start gap-2">
         {!task.archived && (
-          <button
-            {...attributes}
-            {...listeners}
-            data-no-open-task="true"
-            className="mt-1 p-1 text-muted-foreground/30 hover:text-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </button>
+          selectionMode ? (
+            <span
+              aria-hidden
+              className={cn(
+                "mt-1 p-1 flex items-center justify-center",
+                isSelected ? "text-primary" : "text-muted-foreground/60",
+              )}
+            >
+              {isSelected ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+            </span>
+          ) : (
+            <button
+              {...attributes}
+              {...listeners}
+              data-no-open-task="true"
+              className="mt-1 p-1 text-muted-foreground/30 hover:text-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <GripVertical className="h-3.5 w-3.5" />
+            </button>
+          )
         )}
 
         <div className="flex-1 min-w-0 flex flex-col gap-2">
@@ -639,56 +605,48 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button data-no-open-task="true" className="text-muted-foreground/40 hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors">
+                  <button
+                    data-no-open-task="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      suppressCardOpenTemporarily();
+                    }}
+                    className="text-muted-foreground/40 hover:text-foreground p-1 rounded-md hover:bg-muted transition-colors"
+                  >
                     <MoreVertical className="h-3.5 h-3.5" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider opacity-50">Projects</DropdownMenuLabel>
-                  <div className="max-h-40 overflow-y-auto">
-                    {projects.map(p => (
-                      <DropdownMenuItem
-                        key={p.id}
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          const newIds = task.projectIds.includes(p.id)
-                            ? task.projectIds.filter(id => id !== p.id)
-                            : [...task.projectIds, p.id];
-                          updateTask(task.id, { projectIds: newIds });
-                        }}
-                        className="text-xs"
-                      >
-                        <div className={cn(
-                          "w-3 h-3 mr-2 rounded-sm border flex items-center justify-center shrink-0",
-                          task.projectIds.includes(p.id) ? "bg-primary border-primary" : "border-muted-foreground"
-                        )}>
-                          {task.projectIds.includes(p.id) && <CheckCircle2 className="w-2.5 h-2.5 text-primary-foreground" />}
-                        </div>
-                        <span className="truncate">{p.name}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onSelect={(e) => {
-                      e.preventDefault();
-                      setIsAddingProject(true);
+                      e.stopPropagation();
+                      suppressCardOpenTemporarily();
+                      const previousArchived = task.archived;
+                      const nextArchived = !task.archived;
+                      updateTask(task.id, { archived: nextArchived });
+                      toast({
+                        title: nextArchived ? "Task has been archived" : "Task has been unarchived",
+                        action: (
+                          <ToastAction
+                            altText={nextArchived ? "Undo archive" : "Undo unarchive"}
+                            onClick={() => updateTask(task.id, { archived: previousArchived })}
+                          >
+                            Undo
+                          </ToastAction>
+                        ),
+                      });
                     }}
-                    className="text-xs font-medium text-primary"
-                  >
-                    <Plus className="w-3 h-3 mr-2" />
-                    New Project
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => updateTask(task.id, { archived: !task.archived })}
                     className="text-xs"
                   >
                     <Archive className="h-3 w-3 mr-2" />
                     {task.archived ? "Unarchive" : "Archive"}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    onClick={() => deleteTask(task.id)}
+                    onSelect={(e) => {
+                      e.stopPropagation();
+                      suppressCardOpenTemporarily();
+                      deleteTask(task.id);
+                    }}
                     className="text-xs text-destructive focus:text-destructive"
                   >
                     <Trash2 className="h-3 w-3 mr-2" />
@@ -720,16 +678,15 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
                 className="group/badge font-mono text-[9px] px-1.5 py-0 h-4 bg-background/50 border-border/40 text-muted-foreground gap-1"
               >
                 {p.repoUrl ? (
-                  <a
+                  <button
+                    type="button"
                     data-no-open-task="true"
-                    href={getProjectOpenLink(p.repoUrl) || p.repoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => openProjectInEditor(p.repoUrl)}
                     className="hover:text-primary flex items-center gap-0.5"
                     title="Open project in VS Code"
                   >
                     {p.name}
-                  </a>
+                  </button>
                 ) : p.name}
                 <button 
                   data-no-open-task="true"
@@ -758,231 +715,6 @@ export function TaskCard({ task, isOverlay }: TaskCardProps) {
         </div>
       </div>
 
-      <Dialog open={isTaskOpen} onOpenChange={handleTaskOpenChange}>
-        <DialogContent className="sm:max-w-[640px]">
-          <DialogHeader>
-            <DialogTitle className="text-base">{task.jiraId} {task.title}</DialogTitle>
-            <DialogDescription>
-              Manage subtasks and personal notes for this task.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-1">
-            <div className="space-y-1">
-              <Label className="text-[10px] uppercase">Daily Summary (included in email)</Label>
-              <Textarea
-                value={task.note}
-                onChange={(e) => updateTask(task.id, { note: e.target.value })}
-                className="min-h-[80px] text-sm"
-                placeholder="What did you do today on this task?"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-[10px] uppercase">Personal Notes (not included in email)</Label>
-              <div className="rounded-md border bg-background">
-                <div className="flex items-center gap-1 border-b p-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => applyPersonalNoteFormat("bold")}
-                  >
-                    <Bold className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => applyPersonalNoteFormat("italic")}
-                  >
-                    <Italic className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => applyPersonalNoteFormat("underline")}
-                  >
-                    <Underline className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => personalNoteImageInputRef.current?.click()}
-                  >
-                    <ImagePlus className="h-3.5 w-3.5" />
-                  </Button>
-                  <span className="ml-1 text-[10px] text-muted-foreground">Paste screenshots or upload image</span>
-                </div>
-
-                <div
-                  ref={personalNoteEditorRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={syncPersonalNoteFromEditor}
-                  onBlur={savePersonalNote}
-                  onPaste={handlePersonalNotePaste}
-                  onClick={handlePersonalNoteEditorClick}
-                  data-placeholder="Private notes, reminders, links, screenshots..."
-                  className="min-h-[140px] p-3 text-sm outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/70 [&_img]:max-w-full [&_img]:rounded-md [&_img]:my-2 [&_strong]:font-semibold [&_em]:italic [&_u]:underline"
-                />
-
-                {selectedImageWidth !== null && (
-                  <div className="flex items-center gap-1 border-t p-2">
-                    <span className="text-[10px] text-muted-foreground mr-1">Image size</span>
-                    {[25, 50, 75, 100].map((size) => (
-                      <Button
-                        key={size}
-                        type="button"
-                        variant={selectedImageWidth === size ? "default" : "outline"}
-                        size="sm"
-                        className="h-6 px-2 text-[10px]"
-                        onClick={() => setSelectedImageSize(size)}
-                      >
-                        {size}%
-                      </Button>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[10px] text-destructive"
-                      onClick={removeSelectedImage}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                )}
-
-                <input
-                  ref={personalNoteImageInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePersonalNoteImageSelect}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase">Subtasks</Label>
-              <form onSubmit={handleAddSubtask} className="flex gap-2">
-                <Input
-                  value={newSubtaskInput}
-                  onChange={(e) => setNewSubtaskInput(e.target.value)}
-                  placeholder="SUB-123 Subtask title"
-                />
-                <Button type="submit" size="sm" disabled={!newSubtaskInput.trim()}>
-                  Add
-                </Button>
-              </form>
-
-              <div className="max-h-52 overflow-y-auto space-y-2 rounded-md border p-2">
-                {task.subtasks.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No subtasks yet.</p>
-                ) : (
-                  task.subtasks.map((subtask) => {
-                    const subtaskLink = getJiraLink(subtask.jiraId);
-
-                    return (
-                      <div key={subtask.id} className="flex items-center justify-between gap-2 rounded border p-2">
-                        <div className="min-w-0 flex items-center gap-2">
-                          {subtaskLink ? (
-                            <a
-                              href={subtaskLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono text-[10px] font-bold text-primary hover:underline bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 shrink-0"
-                            >
-                              {subtask.jiraId}
-                            </a>
-                          ) : (
-                            <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-                              {subtask.jiraId}
-                            </span>
-                          )}
-                          <span className="text-sm truncate">{subtask.title}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive hover:text-destructive"
-                          onClick={() => removeSubtask(subtask.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase">Tags</Label>
-              <form onSubmit={addTag} className="flex gap-2">
-                <Input
-                  value={newTagInput}
-                  onChange={(e) => setNewTagInput(e.target.value)}
-                  placeholder="urgent"
-                />
-                <Button type="submit" size="sm" disabled={!newTagInput.trim()}>
-                  Add
-                </Button>
-              </form>
-
-              <div className="flex flex-wrap gap-2 rounded-md border p-2 min-h-10">
-                {taskTags.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No tags yet.</p>
-                ) : (
-                  taskTags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="gap-1">
-                      #{tag}
-                      <button
-                        type="button"
-                        className="hover:text-destructive"
-                        onClick={() => removeTag(tag)}
-                      >
-                        <Trash2 className="h-2.5 w-2.5" />
-                      </button>
-                    </Badge>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* New Project Modal (Nested to avoid global state mess) */}
-      <Dialog open={isAddingProject} onOpenChange={setIsAddingProject}>
-        <DialogContent className="sm:max-w-[400px]">
-          <DialogHeader>
-            <DialogTitle className="text-sm">New Project</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreateProject} className="space-y-3 py-2">
-            <div className="space-y-1">
-              <Label className="text-[10px] uppercase">Repo URL</Label>
-              <Input
-                value={newRepoUrl}
-                onChange={(e) => setNewRepoUrl(e.target.value)}
-                className="h-8 text-xs"
-                placeholder="https://github.com/... or /Users/..."
-                required
-              />
-            </div>
-            <DialogFooter>
-              <Button type="submit" size="sm" className="w-full">Create</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

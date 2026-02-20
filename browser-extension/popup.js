@@ -1,12 +1,14 @@
-const APP_BASE_URLS = [
+const BUILTIN_APP_BASE_URLS = [
   "http://127.0.0.1:5001/",
   "http://localhost:5001/",
   "https://wekiban.github.io/task-tracker/",
 ];
-const DEFAULT_APP_BASE_URL = APP_BASE_URLS[APP_BASE_URLS.length - 1];
+const DEFAULT_APP_BASE_URL = BUILTIN_APP_BASE_URLS[BUILTIN_APP_BASE_URLS.length - 1];
+const APP_BASE_URL_STORAGE_KEY = "taskPilotAppBaseUrl";
 
 const jiraIdInput = document.getElementById("jiraId");
 const titleInput = document.getElementById("title");
+const appBaseUrlInput = document.getElementById("appBaseUrl");
 const statusEl = document.getElementById("status");
 
 function setStatus(message, isError = false) {
@@ -38,13 +40,33 @@ async function getActiveTab() {
   return tab;
 }
 
+function normalizeBaseUrl(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return null;
+
+  try {
+    const normalized = new URL(trimmed);
+    return normalized.toString().replace(/\/?$/, "/");
+  } catch {
+    return null;
+  }
+}
+
+function getCandidateBaseUrls(preferredBaseUrl) {
+  const urls = [preferredBaseUrl, ...BUILTIN_APP_BASE_URLS]
+    .map(normalizeBaseUrl)
+    .filter(Boolean);
+
+  return [...new Set(urls)];
+}
+
 function getAppTabPattern(baseUrl) {
   const appUrl = new URL(baseUrl);
   return `${appUrl.origin}${appUrl.pathname}*`;
 }
 
-async function findOpenAppBaseUrl() {
-  for (const baseUrl of APP_BASE_URLS) {
+async function findOpenAppBaseUrl(candidateBaseUrls) {
+  for (const baseUrl of candidateBaseUrls) {
     const existingTabs = await chrome.tabs.query({ url: getAppTabPattern(baseUrl) });
     if (existingTabs.length > 0) {
       return baseUrl;
@@ -52,6 +74,20 @@ async function findOpenAppBaseUrl() {
   }
 
   return null;
+}
+
+function loadStoredAppBaseUrl() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([APP_BASE_URL_STORAGE_KEY], (result) => {
+      resolve(normalizeBaseUrl(result?.[APP_BASE_URL_STORAGE_KEY]) || null);
+    });
+  });
+}
+
+function saveStoredAppBaseUrl(baseUrl) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [APP_BASE_URL_STORAGE_KEY]: baseUrl }, () => resolve());
+  });
 }
 
 async function openOrReuseAppTab(baseUrl, url) {
@@ -78,18 +114,34 @@ async function scrapeCurrentPage() {
     return null;
   }
 
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => {
-      const titleEl = document.querySelector("h1") || document.querySelector("[data-testid='issue.views.issue-base.foundation.summary.heading']");
+  let result = {
+    pageTitle: tab.title || "",
+    heading: "",
+    sourceUrl: tab.url || "",
+  };
 
-      return {
-        pageTitle: document.title || "",
-        heading: titleEl?.textContent?.trim() || "",
-        sourceUrl: window.location.href,
-      };
-    },
-  });
+  try {
+    const execution = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const titleEl =
+          document.querySelector("h1") ||
+          document.querySelector("[data-testid='issue.views.issue-base.foundation.summary.heading']");
+
+        return {
+          pageTitle: document.title || "",
+          heading: titleEl?.textContent?.trim() || "",
+          sourceUrl: window.location.href,
+        };
+      },
+    });
+
+    if (execution?.[0]?.result) {
+      result = execution[0].result;
+    }
+  } catch {
+    setStatus("Couldn't auto-read this page. You can still enter fields manually.", true);
+  }
 
   const parsed = parseFromText(result.heading) || parseFromText(result.pageTitle);
 
@@ -111,30 +163,56 @@ async function scrapeCurrentPage() {
 }
 
 async function openAppWithImport() {
-  const scraped = await scrapeCurrentPage();
+  try {
+    const scraped = await scrapeCurrentPage();
 
-  const jiraId = jiraIdInput.value.trim();
-  const title = titleInput.value.trim();
+    const jiraId = jiraIdInput.value.trim();
+    const title = titleInput.value.trim();
 
-  if (!jiraId || !title) {
-    setStatus("Ticket ID and title are required", true);
-    return;
+    if (!jiraId || !title) {
+      setStatus("Ticket ID and title are required", true);
+      return;
+    }
+
+    const preferredBaseUrl = normalizeBaseUrl(appBaseUrlInput?.value) || DEFAULT_APP_BASE_URL;
+    await saveStoredAppBaseUrl(preferredBaseUrl);
+    const candidateBaseUrls = getCandidateBaseUrls(preferredBaseUrl);
+
+    const sourceUrl = scraped?.sourceUrl || (await getActiveTab())?.url || "";
+    const targetBaseUrl = (await findOpenAppBaseUrl(candidateBaseUrls)) || preferredBaseUrl;
+
+    const url = new URL(targetBaseUrl.replace(/\/$/, "") + "/");
+    url.searchParams.set("import", "1");
+    url.searchParams.set("jiraId", jiraId);
+    url.searchParams.set("title", title);
+    if (sourceUrl) url.searchParams.set("sourceUrl", sourceUrl);
+
+    await openOrReuseAppTab(targetBaseUrl, url.toString());
+    setStatus("Opening Task Pilot...");
+  } catch {
+    setStatus("Unable to open Task Pilot. Check the app URL and try again.", true);
   }
-
-  const sourceUrl = scraped?.sourceUrl || (await getActiveTab())?.url || "";
-  const targetBaseUrl = (await findOpenAppBaseUrl()) || DEFAULT_APP_BASE_URL;
-
-  const url = new URL(targetBaseUrl.replace(/\/$/, "") + "/");
-  url.searchParams.set("import", "1");
-  url.searchParams.set("jiraId", jiraId);
-  url.searchParams.set("title", title);
-  if (sourceUrl) url.searchParams.set("sourceUrl", sourceUrl);
-
-  await openOrReuseAppTab(targetBaseUrl, url.toString());
-  setStatus("Opening Dev Status...");
 }
 
 (async function init() {
+  const storedBaseUrl = await loadStoredAppBaseUrl();
+  const initialBaseUrl = storedBaseUrl || DEFAULT_APP_BASE_URL;
+
+  if (appBaseUrlInput) {
+    appBaseUrlInput.value = initialBaseUrl;
+    appBaseUrlInput.addEventListener("change", async () => {
+      const normalized = normalizeBaseUrl(appBaseUrlInput.value);
+      if (!normalized) {
+        setStatus("Please enter a valid app URL", true);
+        return;
+      }
+
+      appBaseUrlInput.value = normalized;
+      await saveStoredAppBaseUrl(normalized);
+      setStatus("App URL saved");
+    });
+  }
+
   void scrapeCurrentPage();
 
   document.getElementById("importBtn").addEventListener("click", () => {

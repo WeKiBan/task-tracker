@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, ExternalLink, Pencil, Save, Trash2, X } from "lucide-react";
-import { useStore } from "@/hooks/use-store";
+import { Settings as SettingsIcon, Pencil, Save, Trash2, X } from "lucide-react";
+import { useStore, isLocalProjectPath, normalizeProjectUrlKey } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +66,23 @@ export function SettingsModal({
 
   const saveEditProject = () => {
     if (!editingProjectId || !editingRepoUrl.trim()) {
+      return;
+    }
+
+    if (!isLocalProjectPath(editingRepoUrl)) {
+      window.alert("Please provide a local folder path (for example: /Users/you/project).");
+      return;
+    }
+
+    const normalizedEditingPath = normalizeProjectUrlKey(editingRepoUrl);
+    const duplicate = projects.find(
+      (project) =>
+        project.id !== editingProjectId &&
+        normalizeProjectUrlKey(project.repoUrl) === normalizedEditingPath,
+    );
+
+    if (duplicate) {
+      window.alert("Project already exists.");
       return;
     }
 
@@ -212,18 +229,12 @@ export function SettingsModal({
                           value={editingRepoUrl}
                           onChange={(e) => setEditingRepoUrl(e.target.value)}
                           className="h-8 text-xs"
-                          placeholder="Repo URL"
+                          placeholder="/Users/..."
                         />
                       ) : (
-                        <a
-                          href={project.repoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 truncate"
-                        >
+                        <p className="text-[10px] text-muted-foreground truncate">
                           {project.repoUrl}
-                          <ExternalLink className="h-2.5 w-2.5 shrink-0" />
-                        </a>
+                        </p>
                       )}
                     </div>
                   );

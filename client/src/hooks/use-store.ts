@@ -77,10 +77,22 @@ const getProjectNameFromUrl = (repoUrl: string) => {
   }
 };
 
-const normalizeProjectUrlKey = (repoUrl: string) => {
+export const isLocalProjectPath = (value: string) => /^(~\/|\/|[A-Za-z]:[\\/]|\\\\)/.test(value.trim());
+
+export const normalizeProjectUrlKey = (repoUrl: string) => {
   const trimmed = repoUrl.trim();
   if (!trimmed) {
     return "";
+  }
+
+  const sshScpMatch = trimmed.match(/^git@([^:]+):(.+)$/i);
+  if (sshScpMatch) {
+    const [, host, path] = sshScpMatch;
+    return `${host.toLowerCase()}${path
+      .replace(/\/+/g, "/")
+      .replace(/\/+$|\/$/g, "")
+      .replace(/\.git$/i, "")
+      .toLowerCase()}`;
   }
 
   try {
@@ -147,6 +159,25 @@ export interface Subtask {
   title: string;
 }
 
+export interface TaskTodoItem {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface TaskReminderItem {
+  id: string;
+  at: string;
+  message: string;
+}
+
+export interface TaskHistoryEntry {
+  id: string;
+  at: string;
+  type: "created" | "status" | "archive" | "dueDate" | "reminder" | "todos" | "note" | "personalNote" | "tags";
+  message: string;
+}
+
 export interface Task {
   id: string;
   jiraId: string;
@@ -157,6 +188,10 @@ export interface Task {
   subtasks: Subtask[];
   tags: string[];
   projectIds: string[];
+  dueDate: string;
+  reminders: TaskReminderItem[];
+  todos: TaskTodoItem[];
+  history: TaskHistoryEntry[];
   archived: boolean;
   order: number;
 }
@@ -170,6 +205,9 @@ type AddTaskInput = {
   personalNote?: string;
   subtasks?: Subtask[];
   tags?: string[];
+  dueDate?: string;
+  reminders?: TaskReminderItem[];
+  todos?: TaskTodoItem[];
 };
 
 export interface Settings {
@@ -190,6 +228,7 @@ interface AppState {
   
   // Actions
   addTask: (task: AddTaskInput) => void;
+  restoreTasks: (tasks: Task[]) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   reorderTasks: (newOrder: Task[]) => void;
@@ -301,6 +340,7 @@ export const useStore = create<AppState>()(
       },
 
       addTask: (taskData) => set((state) => {
+        const createdAt = new Date().toISOString();
         const newTask: Task = {
           ...taskData,
           status: normalizeTaskStatus(taskData.status),
@@ -309,12 +349,41 @@ export const useStore = create<AppState>()(
           subtasks: taskData.subtasks || [],
           tags: dedupeTags(taskData.tags || []),
           projectIds: dedupeProjectIds(taskData.projectIds),
+          dueDate: taskData.dueDate || "",
+          reminders: (taskData.reminders || []).map((reminder) => ({
+            id: reminder.id || nanoid(),
+            at: reminder.at || "",
+            message: reminder.message || "",
+          })).filter((reminder) => !!reminder.at),
+          todos: taskData.todos || [],
+          history: [
+            {
+              id: nanoid(),
+              at: createdAt,
+              type: "created",
+              message: "Task created",
+            },
+          ],
           id: nanoid(),
           order: state.tasks.length,
           archived: false,
         };
         queueCloudSave(get);
         return { tasks: [newTask, ...state.tasks] };
+      }),
+
+      restoreTasks: (tasksToRestore) => set((state) => {
+        const existingIds = new Set(state.tasks.map((task) => task.id));
+        const restoreList = tasksToRestore.filter((task) => !existingIds.has(task.id));
+
+        if (restoreList.length === 0) {
+          return state;
+        }
+
+        queueCloudSave(get);
+        return {
+          tasks: [...restoreList, ...state.tasks],
+        };
       }),
 
       updateTask: (id, updates) => set((state) => {
@@ -330,6 +399,22 @@ export const useStore = create<AppState>()(
             ...(normalizedStatus ? { status: normalizedStatus } : {}),
             ...(updates.tags ? { tags: dedupeTags(updates.tags) } : {}),
             ...(updates.projectIds ? { projectIds: dedupeProjectIds(updates.projectIds) } : {}),
+            ...(updates.todos ? {
+              todos: updates.todos.map((todo) => ({
+                id: todo.id || nanoid(),
+                text: todo.text,
+                done: !!todo.done,
+              })),
+            } : {}),
+            ...(updates.reminders ? {
+              reminders: updates.reminders
+                .map((reminder) => ({
+                  id: reminder.id || nanoid(),
+                  at: reminder.at,
+                  message: reminder.message || "",
+                }))
+                .filter((reminder) => !!reminder.at),
+            } : {}),
           };
           
           const updatedTask = { ...t, ...normalizedUpdates };
@@ -350,6 +435,85 @@ export const useStore = create<AppState>()(
             ARCHIVED_STATUSES.includes(t.status)
           ) {
             updatedTask.archived = false;
+          }
+
+          const historyEntries: TaskHistoryEntry[] = [];
+          const now = new Date().toISOString();
+
+          if (normalizedStatus && normalizedStatus !== t.status) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "status",
+              message: `Status changed to ${normalizedStatus}`,
+            });
+          }
+
+          if (typeof updates.archived === "boolean" && updates.archived !== t.archived) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "archive",
+              message: updates.archived ? "Task archived" : "Task unarchived",
+            });
+          }
+
+          if (typeof updates.dueDate === "string" && updates.dueDate !== (t.dueDate || "")) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "dueDate",
+              message: updates.dueDate ? `Due date set to ${updates.dueDate}` : "Due date removed",
+            });
+          }
+
+          if (updates.reminders) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "reminder",
+              message: "Reminders updated",
+            });
+          }
+
+          if (updates.todos) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "todos",
+              message: "Todo list updated",
+            });
+          }
+
+          if (typeof updates.note === "string" && updates.note !== t.note) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "note",
+              message: "Daily summary updated",
+            });
+          }
+
+          if (typeof updates.personalNote === "string" && updates.personalNote !== t.personalNote) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "personalNote",
+              message: "Personal notes updated",
+            });
+          }
+
+          if (updates.tags) {
+            historyEntries.push({
+              id: nanoid(),
+              at: now,
+              type: "tags",
+              message: "Tags updated",
+            });
+          }
+
+          if (historyEntries.length > 0) {
+            updatedTask.history = [...(t.history || []), ...historyEntries].slice(-120);
           }
 
           return updatedTask;
@@ -373,6 +537,10 @@ export const useStore = create<AppState>()(
       addProject: (projectData) => {
         const repoUrl = projectData.repoUrl.trim();
         if (!repoUrl) {
+          return "";
+        }
+
+        if (!isLocalProjectPath(repoUrl)) {
           return "";
         }
 
@@ -406,6 +574,10 @@ export const useStore = create<AppState>()(
       updateProject: (id, projectData) => set((state) => {
         const repoUrl = projectData.repoUrl.trim();
         if (!repoUrl) {
+          return state;
+        }
+
+        if (!isLocalProjectPath(repoUrl)) {
           return state;
         }
 
@@ -485,15 +657,46 @@ function getLocalSnapshotKey(uid: string) {
 
 function normalizeSnapshot(data?: Partial<CloudSnapshot>): CloudSnapshot {
   return {
-    tasks: (data?.tasks || []).map((task) => ({
-      ...task,
-      status: normalizeTaskStatus(task.status),
-      note: task.note || '',
-      personalNote: task.personalNote || '',
-      subtasks: task.subtasks || [],
-      tags: dedupeTags(task.tags || []),
-      projectIds: dedupeProjectIds(task.projectIds || []),
-    })),
+    tasks: (data?.tasks || []).map((task) => {
+      const legacyTask = task as Task & { reminderDate?: string; reminderMessage?: string };
+      const normalizedReminders = (task.reminders || [])
+        .map((reminder) => ({
+          id: reminder.id || nanoid(),
+          at: reminder.at || '',
+          message: reminder.message || '',
+        }))
+        .filter((reminder) => !!reminder.at);
+
+      const migratedLegacyReminder = legacyTask.reminderDate
+        ? [{
+            id: nanoid(),
+            at: legacyTask.reminderDate,
+            message: legacyTask.reminderMessage || '',
+          }]
+        : [];
+
+      return {
+        id: task.id || nanoid(),
+        jiraId: task.jiraId || "",
+        title: task.title || "",
+        status: normalizeTaskStatus(task.status),
+        note: task.note || '',
+        personalNote: task.personalNote || '',
+        subtasks: task.subtasks || [],
+        tags: dedupeTags(task.tags || []),
+        projectIds: dedupeProjectIds(task.projectIds || []),
+        dueDate: task.dueDate || '',
+        reminders: normalizedReminders.length > 0 ? normalizedReminders : migratedLegacyReminder,
+        todos: (task.todos || []).map((todo) => ({
+          id: todo.id || nanoid(),
+          text: todo.text || '',
+          done: !!todo.done,
+        })),
+        history: task.history || [],
+        archived: !!task.archived,
+        order: typeof task.order === "number" ? task.order : 0,
+      };
+    }),
     projects: data?.projects || [],
     settings: {
       jiraBaseUrl: data?.settings?.jiraBaseUrl || '',

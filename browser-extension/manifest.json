@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Dev Status Ticket Importer",
-  "description": "Scrape current ticket and add it to Dev Status.",
+  "name": "Task Pilot Ticket Importer",
+  "description": "Scrape the current ticket and add it to Task Pilot.",
   "version": "1.0.0",
   "action": {
     "default_popup": "popup.html"

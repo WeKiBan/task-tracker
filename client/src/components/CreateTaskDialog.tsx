@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useStore, type TaskStatus } from "@/hooks/use-store";
+import { useStore, isLocalProjectPath, normalizeProjectUrlKey, type TaskStatus } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,12 @@ const TASK_STATUSES: TaskStatus[] = [
   "Suspended",
 ];
 
-export function CreateTaskDialog() {
+interface CreateTaskDialogProps {
+  triggerClassName?: string;
+  iconOnly?: boolean;
+}
+
+export function CreateTaskDialog({ triggerClassName, iconOnly = false }: CreateTaskDialogProps) {
   const [open, setOpen] = useState(false);
   const { addTask, addProject, projects } = useStore();
   
@@ -44,6 +49,7 @@ export function CreateTaskDialog() {
   const [status, setStatus] = useState<TaskStatus>("Not Started");
   const [selectedProject, setSelectedProject] = useState<string>("none");
   const [isAddingProject, setIsAddingProject] = useState(false);
+  const [isPickingProjectFolder, setIsPickingProjectFolder] = useState(false);
   const [newRepoUrl, setNewRepoUrl] = useState("");
 
   const handleProjectSelect = (value: string) => {
@@ -65,11 +71,53 @@ export function CreateTaskDialog() {
       return;
     }
 
+    if (!isLocalProjectPath(newRepoUrl)) {
+      window.alert("Please provide a local folder path (for example: /Users/you/project).");
+      return;
+    }
+
+    const normalizedNewProject = normalizeProjectUrlKey(newRepoUrl);
+    const existingProject = projects.find(
+      (project) => normalizeProjectUrlKey(project.repoUrl) === normalizedNewProject,
+    );
+
+    if (existingProject) {
+      setSelectedProject(existingProject.id);
+      setNewRepoUrl("");
+      setIsAddingProject(false);
+      window.alert("Project already exists. Selected the existing project instead.");
+      return;
+    }
+
     const projectId = addProject({ repoUrl: newRepoUrl.trim() });
 
     setSelectedProject(projectId);
     setNewRepoUrl("");
     setIsAddingProject(false);
+  };
+
+  const pickProjectFolder = async () => {
+    setIsPickingProjectFolder(true);
+    try {
+      const response = await fetch("/api/pick-project-folder");
+      const payload = (await response.json().catch(() => ({}))) as { path?: string; message?: string };
+
+      if (!response.ok) {
+        window.alert(payload.message || "Unable to open folder picker. You can paste a local path manually.");
+        return;
+      }
+
+      if (payload.path) {
+        setNewRepoUrl(payload.path);
+        return;
+      }
+
+      window.alert("No folder was selected.");
+    } catch {
+      window.alert("Folder picker is unavailable here. Run the app locally and try again, or paste a local path manually.");
+    } finally {
+      setIsPickingProjectFolder(false);
+    }
   };
 
   const parseTaskInput = (input: string) => {
@@ -124,9 +172,9 @@ export function CreateTaskDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+        <Button className={triggerClassName || "gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"}>
           <Plus className="h-4 w-4" />
-          New Task
+          {!iconOnly && "New Task"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -217,14 +265,23 @@ export function CreateTaskDialog() {
           </DialogHeader>
           <form onSubmit={handleCreateProject} className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label htmlFor="newProjectRepo">Repo URL</Label>
+              <Label htmlFor="newProjectRepo">Project Folder</Label>
               <Input
                 id="newProjectRepo"
                 value={newRepoUrl}
                 onChange={(e) => setNewRepoUrl(e.target.value)}
-                placeholder="https://github.com/... or /Users/..."
+                placeholder="/Users/..."
                 required
               />
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={isPickingProjectFolder}
+                onClick={() => void pickProjectFolder()}
+              >
+                {isPickingProjectFolder ? "Picking..." : "Pick Folder (Mac Local)"}
+              </Button>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={!newRepoUrl.trim()}>

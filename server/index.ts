@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { spawn } from "child_process";
+import path from "path";
 
 const app = express();
 const httpServer = createServer(app);
@@ -15,13 +16,15 @@ declare module "http" {
 
 app.use(
   express.json({
+    limit: "20mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
   }),
 );
 
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "20mb" }));
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -135,7 +138,7 @@ app.use((req, res, next) => {
         httpServer.off("error", onError);
         log(`serving on port ${port}`);
         if (process.env.OPEN_BROWSER === "true") {
-          openInBrowser(`http://127.0.0.1:${port}`);
+          openInBrowser(`http://localhost:${port}`);
         }
       },
     );

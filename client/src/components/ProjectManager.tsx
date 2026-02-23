@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FolderGit2, Plus, Trash2 } from "lucide-react";
-import { useStore, isLocalProjectPath, normalizeProjectUrlKey } from "@/hooks/use-store";
+import { useStore, normalizeProjectUrlKey } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,11 +17,6 @@ export function ProjectManager() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRepoUrl.trim()) {
-      if (!isLocalProjectPath(newRepoUrl)) {
-        window.alert("Please provide a local folder path (for example: /Users/you/project).");
-        return;
-      }
-
       const normalizedNewProject = normalizeProjectUrlKey(newRepoUrl);
       const existingProject = projects.find(
         (project) => normalizeProjectUrlKey(project.repoUrl) === normalizedNewProject,
@@ -49,7 +44,7 @@ export function ProjectManager() {
         
         <form onSubmit={handleAdd} className="flex gap-2 mb-4">
           <Input 
-            placeholder="/Users/..." 
+            placeholder="/path/to/project or https://github.com/..." 
             value={newRepoUrl}
             onChange={(e) => setNewRepoUrl(e.target.value)}
             className="h-8 text-sm flex-1"

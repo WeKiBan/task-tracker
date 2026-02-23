@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useStore, isLocalProjectPath, normalizeProjectUrlKey, type TaskStatus } from "@/hooks/use-store";
+import { useStore, normalizeProjectUrlKey, type TaskStatus } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,11 +68,6 @@ export function CreateTaskDialog({ triggerClassName, iconOnly = false }: CreateT
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRepoUrl.trim()) {
-      return;
-    }
-
-    if (!isLocalProjectPath(newRepoUrl)) {
-      window.alert("Please provide a local folder path (for example: /Users/you/project).");
       return;
     }
 
@@ -265,12 +260,12 @@ export function CreateTaskDialog({ triggerClassName, iconOnly = false }: CreateT
           </DialogHeader>
           <form onSubmit={handleCreateProject} className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label htmlFor="newProjectRepo">Project Folder</Label>
+              <Label htmlFor="newProjectRepo">Project Path or URL</Label>
               <Input
                 id="newProjectRepo"
                 value={newRepoUrl}
                 onChange={(e) => setNewRepoUrl(e.target.value)}
-                placeholder="/Users/..."
+                placeholder="/path/to/project or https://github.com/..."
                 required
               />
               <Button

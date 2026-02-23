@@ -245,43 +245,43 @@ export function TaskCard({ task, isOverlay, selectionMode = false, isSelected = 
     }
   };
 
-  const openProjectInEditor = async (target: string) => {
+  const openProjectInEditor = (target: string) => {
     const trimmed = target.trim();
     if (!trimmed) {
       return;
     }
 
     if (isLocalProjectPath(trimmed)) {
-      try {
-        const response = await fetch("/api/open-project-in-vscode", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ target: trimmed }),
-        });
-
-        if (!response.ok) {
-          const payload = (await response.json().catch(() => ({}))) as { message?: string };
-          window.alert(payload.message || "Unable to open project in a new VS Code window.");
-        }
-      } catch {
-        window.alert("Unable to open project in a new VS Code window.");
-      }
+      // Use vscode:// protocol URI so it works from any browser (local or deployed).
+      // The browser asks the OS to open VS Code on the user's local machine.
+      const vsCodeUri = `vscode://file${trimmed.startsWith("/") ? "" : "/"}${encodeURI(trimmed)}`;
+      // Use a hidden iframe first (works best in Chrome/Edge), fall back to location.href
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = vsCodeUri;
+      document.body.appendChild(iframe);
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 500);
+      // Also try location.href as a fallback for Safari/Firefox
+      setTimeout(() => {
+        window.location.href = vsCodeUri;
+      }, 100);
       return;
     }
 
-    window.alert("Only local machine project paths are supported.");
+    // For remote URLs (GitHub, GitLab, etc.), open in a new browser tab
+    try {
+      const url = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      window.alert("Unable to open project URL.");
+    }
   };
 
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRepoUrl.trim()) {
-      if (!isLocalProjectPath(newRepoUrl)) {
-        window.alert("Please provide a local folder path (for example: /Users/you/project).");
-        return;
-      }
-
       const normalizedNewProject = normalizeProjectUrlKey(newRepoUrl);
       const existingProject = projects.find(
         (project) => normalizeProjectUrlKey(project.repoUrl) === normalizedNewProject,
@@ -657,16 +657,14 @@ export function TaskCard({ task, isOverlay, selectionMode = false, isSelected = 
             </div>
           </div>
 
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Daily Summary
-            </p>
-            <Textarea
+          <div className="mb-2">
+            <Input
               data-no-open-task="true"
               value={task.note}
               onChange={(e) => updateTask(task.id, { note: e.target.value })}
-              placeholder="Add your daily summary here..."
-              className="w-full max-w-[94%] min-h-[56px] h-[56px] resize-none text-xs border border-input bg-background/70 hover:bg-background focus:bg-background focus:border-primary/40 focus:ring-1 focus:ring-primary/30 transition-all p-2 rounded-md"
+              placeholder="Daily summary..."
+              className="w-full max-w-[94%] h-8 text-xs font-bold border border-input bg-background/70 hover:bg-background focus:bg-background focus:border-primary/40 focus:ring-1 focus:ring-primary/30 transition-all px-2 rounded-md"
+              maxLength={120}
             />
           </div>
 

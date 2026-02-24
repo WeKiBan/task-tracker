@@ -16,6 +16,13 @@ import {
 } from "@/components/ui/dialog";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "@/components/ui/select";
 
 const CREATE_PROJECT_VALUE = "__create_project__";
 const TASK_STATUSES: TaskStatus[] = [

@@ -14,14 +14,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const CREATE_PROJECT_VALUE = "__create_project__";
 const TASK_STATUSES: TaskStatus[] = [
@@ -208,21 +202,28 @@ export function CreateTaskDialog({ triggerClassName, iconOnly = false }: CreateT
           </div>
           <div className="grid grid-cols-4 gap-4 items-center">
             <Label htmlFor="project" className="text-right">Project</Label>
-            <Select value={selectedProject} onValueChange={handleProjectSelect}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No Project</SelectItem>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-                <SelectSeparator />
-                <SelectItem value={CREATE_PROJECT_VALUE}>+ Add Project</SelectItem>
-              </SelectContent>
-            </Select>
+            <Autocomplete
+              className="col-span-3"
+              options={[{ id: 'none', name: 'No Project' }, ...projects]}
+              getOptionLabel={(option) => option.name || ''}
+              value={projects.find(p => p.id === selectedProject) || { id: 'none', name: 'No Project' }}
+              onChange={(_e, value) => {
+                if (!value || value.id === 'none') {
+                  setSelectedProject('none');
+                } else {
+                  setSelectedProject(value.id);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Select project" size="small" />
+              )}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  {option.name}
+                </li>
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+            />
           </div>
           <div className="grid grid-cols-4 gap-4 items-start">
             <Label htmlFor="note" className="text-right pt-2">Summary</Label>

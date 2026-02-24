@@ -9,14 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const PROJECT_SELECT_NONE = "__none__";
 const PROJECT_SELECT_ADD_NEW = "__add_new__";
@@ -628,22 +622,29 @@ export default function TaskDetails() {
 
           <div className="space-y-2">
             <Label className="text-[10px] uppercase">Projects</Label>
-
-            <Select value={selectedProjectToAdd} onValueChange={handleProjectSelectInTask}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Assign existing project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={PROJECT_SELECT_NONE}>Select project</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-                <SelectSeparator />
-                <SelectItem value={PROJECT_SELECT_ADD_NEW}>+ Add new project</SelectItem>
-              </SelectContent>
-            </Select>
+            <Autocomplete
+              options={[{ id: PROJECT_SELECT_NONE, name: 'Select project' }, ...projects, { id: PROJECT_SELECT_ADD_NEW, name: '+ Add new project' }]}
+              getOptionLabel={(option) => option.name || ''}
+              value={projects.find(p => p.id === selectedProjectToAdd) || { id: PROJECT_SELECT_NONE, name: 'Select project' }}
+              onChange={(_e, value) => {
+                if (!value || value.id === PROJECT_SELECT_NONE) {
+                  setSelectedProjectToAdd(PROJECT_SELECT_NONE);
+                } else if (value.id === PROJECT_SELECT_ADD_NEW) {
+                  setIsAddingProject(true);
+                } else {
+                  handleProjectSelectInTask(value.id);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Assign existing project" size="small" />
+              )}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  {option.name}
+                </li>
+              )}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+            />
 
             {isAddingProject && (
               <form onSubmit={handleCreateProject} className="rounded-md border p-2 space-y-2">

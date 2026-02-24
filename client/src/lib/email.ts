@@ -6,7 +6,7 @@ const formatTaskLine = (task: Task) => {
     return `${task.jiraId} ${task.title}`;
   }
 
-  return `${task.jiraId} ${task.title} [**${summary}**]`;
+  return `${task.jiraId} ${task.title} [${summary}]`;
 };
 
 export const buildStatusEmailReport = (

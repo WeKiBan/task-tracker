@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "@/hooks/use-toast";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, Bold, Italic, Underline, List, Trash2, ExternalLink, Check } from "lucide-react";
 import { nanoid } from "nanoid";
@@ -455,8 +456,27 @@ export default function TaskDetails() {
         </div>
 
         <div className="rounded-lg border bg-card text-card-foreground p-4 space-y-4 shadow-sm">
-          <div>
+
+          <div className="flex items-center gap-2">
             <h1 className="text-lg font-semibold leading-tight">{task.title}</h1>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              title="Copy ticket and description"
+              onClick={() => {
+                if (task?.jiraId && task?.title) {
+                  navigator.clipboard.writeText(`${task.jiraId} - ${task.title}`);
+                  toast({
+                    title: "Copied!",
+                    description: `Task ID and description copied to clipboard.`,
+                  });
+                }
+              }}
+              className="ml-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/><rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2"/></svg>
+            </Button>
           </div>
 
           <div className="space-y-1">
